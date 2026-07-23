@@ -54,15 +54,21 @@ int main(int argc, char** argv) {
     const QString firstArg = argc > 1 ? QString::fromLocal8Bit(argv[1]) : QString();
     if (Cli::isCommand(firstArg)) {
 #ifdef Q_OS_WIN
-        // feather-pdf.exe is a GUI-subsystem binary, so cmd/PowerShell detach it
-        // from the console and CLI output would vanish. Re-attach to the parent
-        // console and rewire the standard streams so sub-commands behave like a
-        // normal console program.
-        if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+        // feather-pdf.exe is a GUI-subsystem binary, so cmd/PowerShell start it
+        // with no console and CLI output would vanish. Re-attach to the parent
+        // console and rewire the standard streams — but only the streams that
+        // have no handle yet, so redirection and pipes (scripts, tests) keep
+        // flowing into the pipe instead of being hijacked to the console.
+        const bool noStdout = GetStdHandle(STD_OUTPUT_HANDLE) == nullptr;
+        const bool noStderr = GetStdHandle(STD_ERROR_HANDLE) == nullptr;
+        if ((noStdout || noStderr) && AttachConsole(ATTACH_PARENT_PROCESS)) {
             FILE* unused;
-            freopen_s(&unused, "CONOUT$", "w", stdout);
-            freopen_s(&unused, "CONOUT$", "w", stderr);
-            freopen_s(&unused, "CONIN$", "r", stdin);
+            if (noStdout)
+                freopen_s(&unused, "CONOUT$", "w", stdout);
+            if (noStderr)
+                freopen_s(&unused, "CONOUT$", "w", stderr);
+            if (GetStdHandle(STD_INPUT_HANDLE) == nullptr)
+                freopen_s(&unused, "CONIN$", "r", stdin);
         }
 #endif
         if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM"))

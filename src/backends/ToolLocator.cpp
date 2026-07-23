@@ -73,20 +73,16 @@ QString soffice() {
         return s;
 #ifdef Q_OS_WIN
     // The installer records its location; UNO InstallPath points at <root>\program.
-    for (const auto scope : {QSettings::NativeFormat}) {
-        Q_UNUSED(scope);
-        for (const QString& key :
-             {QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\LibreOffice\\UNO\\InstallPath"),
-              QStringLiteral("HKEY_CURRENT_USER\\SOFTWARE\\LibreOffice\\UNO\\InstallPath")}) {
-            const QString dir = QSettings(key, QSettings::NativeFormat)
-                                    .value(QStringLiteral("."))
-                                    .toString();
-            if (!dir.isEmpty()) {
-                const QString hit =
-                    existing(QDir::fromNativeSeparators(dir) + QStringLiteral("/soffice.exe"));
-                if (!hit.isEmpty())
-                    return hit;
-            }
+    for (const QString& key :
+         {QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\LibreOffice\\UNO\\InstallPath"),
+          QStringLiteral("HKEY_CURRENT_USER\\SOFTWARE\\LibreOffice\\UNO\\InstallPath")}) {
+        const QString dir =
+            QSettings(key, QSettings::NativeFormat).value(QStringLiteral(".")).toString();
+        if (!dir.isEmpty()) {
+            const QString hit =
+                existing(QDir::fromNativeSeparators(dir) + QStringLiteral("/soffice.exe"));
+            if (!hit.isEmpty())
+                return hit;
         }
     }
     return inProgramFiles(QStringLiteral("LibreOffice/program/soffice.exe"));

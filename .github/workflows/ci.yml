@@ -50,7 +50,7 @@ jobs:
         run: cmake --build build --config RelWithDebInfo
 
       - name: Verify the binary was produced
-        run: if (-not (Test-Path build\src\RelWithDebInfo\feather-pdf.exe)) { exit 1 }
+        run: if (-not (Test-Path build\RelWithDebInfo\feather-pdf.exe)) { exit 1 }
 
       - name: Run tests
         run: ctest --test-dir build -C RelWithDebInfo --output-on-failure

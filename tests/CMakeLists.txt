@@ -162,6 +162,7 @@ set_tests_properties(document PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
 qt_add_executable(test_converter
     test_converter.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/Converter.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/ToolLocator.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/Converter.h
 )
 target_include_directories(test_converter PRIVATE ${CMAKE_SOURCE_DIR}/src)
@@ -177,6 +178,7 @@ set_tests_properties(converter PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen
 qt_add_executable(test_imageexporter
     test_imageexporter.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/ImageExporter.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/ToolLocator.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/ImageExporter.h
 )
 target_include_directories(test_imageexporter PRIVATE ${CMAKE_SOURCE_DIR}/src)
@@ -237,6 +239,7 @@ set_tests_properties(sanitizer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen
 qt_add_executable(test_pdfa
     test_pdfa.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/PdfA.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/ToolLocator.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/PdfA.h
 )
 target_include_directories(test_pdfa PRIVATE ${CMAKE_SOURCE_DIR}/src)
@@ -356,6 +359,7 @@ set_tests_properties(ocrpreprocess PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offsc
 qt_add_executable(test_signer
     test_signer.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/Signer.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/ToolLocator.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/Signer.h
     ${CMAKE_SOURCE_DIR}/src/backends/LtvSigner.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/LtvSigner.h
@@ -382,7 +386,9 @@ qt_add_executable(test_batchrunner
     ${CMAKE_SOURCE_DIR}/src/backends/Watermarker.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/Flattener.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/PdfA.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/ToolLocator.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/Ocr.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/ToolLocator.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/OcrPreprocess.cpp
 )
 target_include_directories(test_batchrunner PRIVATE ${CMAKE_SOURCE_DIR}/src)
