@@ -1,0 +1,23 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=KonqPopupMenu/Plugin
+MimeType=application/pdf;
+Actions=Compress;Sanitize;ToText;
+X-KDE-Submenu=Feather PDF
+X-KDE-Priority=TopLevel
+Icon=io.github.s4rt4.FeatherPDF
+
+[Desktop Action Compress]
+Name=Compress
+Icon=io.github.s4rt4.FeatherPDF
+Exec=feather-pdf-action compress %F
+
+[Desktop Action Sanitize]
+Name=Remove Hidden Info
+Icon=io.github.s4rt4.FeatherPDF
+Exec=feather-pdf-action sanitize %F
+
+[Desktop Action ToText]
+Name=Extract Text
+Icon=io.github.s4rt4.FeatherPDF
+Exec=feather-pdf-action to-text %F

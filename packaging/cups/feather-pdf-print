@@ -1,0 +1,65 @@
+#!/bin/sh
+# Feather PDF — CUPS backend for the "Print to Feather PDF" virtual printer.
+#
+# CUPS runs the filter chain first, so by the time we're called the document is
+# already a PDF. We save it into the requesting user's Documents and best-effort
+# open it in Feather PDF in their graphical session (the backend itself runs as
+# root/lp, outside that session, so the open is allowed to fail quietly).
+#
+# CUPS calls this with no arguments for device discovery, otherwise:
+#   feather-pdf-print job-id user title copies options [file]
+# With a file argument we read that; without one we read the job from stdin.
+
+# ── Discovery ────────────────────────────────────────────────────────────────
+if [ "$#" -eq 0 ]; then
+    echo 'file feather-pdf-print:/ "Unknown" "Feather PDF" "Feather PDF"'
+    exit 0
+fi
+
+job_id=$1
+user=$2
+title=$3
+src=$6 # empty -> stdin
+
+# ── Destination ──────────────────────────────────────────────────────────────
+# FEATHER_PRINT_DIR overrides the target (used by tests and power users);
+# otherwise resolve the user's home without touching their session.
+dir=${FEATHER_PRINT_DIR:-}
+if [ -z "$dir" ]; then
+    home=$(getent passwd "$user" | cut -d: -f6)
+    [ -n "$home" ] || home=/tmp
+    dir="$home/Documents/Feather PDF"
+fi
+mkdir -p "$dir" 2>/dev/null || dir=/tmp
+
+# A safe, unique filename from the print job's title.
+safe=$(printf '%s' "$title" | tr -c 'A-Za-z0-9._-' '_' | cut -c1-80)
+case "$safe" in '' | _*) safe="document$safe" ;; esac
+out="$dir/${safe}-${job_id}.pdf"
+
+# ── Save ─────────────────────────────────────────────────────────────────────
+if [ -n "$src" ]; then
+    cp "$src" "$out" || {
+        echo "ERROR: Feather PDF couldn't save the print job" >&2
+        exit 1
+    }
+else
+    cat >"$out" || {
+        echo "ERROR: Feather PDF couldn't save the print job" >&2
+        exit 1
+    }
+fi
+chown "$user" "$out" 2>/dev/null
+chmod 644 "$out" 2>/dev/null
+
+# ── Best-effort open in the user's session ───────────────────────────────────
+# systemd-run targets the user's own systemd manager, which (on a logged-in
+# graphical session) has WAYLAND_DISPLAY/DISPLAY imported. If that fails — no
+# session, headless print server, lingering off — the file is still saved.
+if [ "${FEATHER_PRINT_OPEN:-1}" = "1" ]; then
+    systemd-run --user --machine="${user}@.host" -q -- feather-pdf "$out" \
+        >/dev/null 2>&1 || true
+fi
+
+echo "INFO: Feather PDF saved $out" >&2
+exit 0

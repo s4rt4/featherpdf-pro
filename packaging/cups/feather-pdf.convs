@@ -1,0 +1,8 @@
+# Feather PDF — MIME conversion for the virtual printer.
+# The printer's *cupsFilter wants application/vnd.cups-pdf; CUPS already knows
+# how to turn any printable input into application/pdf, so this last hop just
+# runs pdftopdf (which applies copies, page ranges, N-up) and hands the result
+# to our backend.
+#
+#   source-type           destination-type          cost  filter
+application/pdf            application/vnd.cups-pdf   33    pdftopdf

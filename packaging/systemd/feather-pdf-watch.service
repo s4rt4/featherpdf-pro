@@ -1,0 +1,27 @@
+# Feather PDF - watch-folder automation (systemd user service).
+#
+# Runs `feather-pdf watch` so PDFs dropped into a folder are processed by a saved
+# Batch action automatically. Copy this file, edit the paths in ExecStart, then:
+#
+#   cp feather-pdf-watch.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now feather-pdf-watch.service
+#
+# %h expands to your home directory. Build an action in the Batch wizard
+# ("Save action..."), then point --action at the saved JSON.
+
+[Unit]
+Description=Feather PDF watch-folder automation
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/feather-pdf watch \
+    --action %h/.local/share/feather-pdf/actions/my-action.json \
+    --in %h/Documents/Inbox \
+    --out %h/Documents/Processed
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

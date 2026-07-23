@@ -1,0 +1,90 @@
+#!/bin/sh
+# Feather PDF — install or remove the "Print to Feather PDF" virtual printer.
+#
+# It drops a CUPS backend into CUPS' private directory and creates a print
+# queue, so it needs root:
+#   sudo feather-pdf-setup-printer              # install
+#   sudo feather-pdf-setup-printer --uninstall  # remove
+#
+# --assets DIR points at the packaged CUPS files (default: ../share/feather-pdf/
+# cups next to this script).
+
+set -eu
+
+self_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+
+# Re-run under sudo if we're not root yet (preserving the original arguments).
+if [ "$(id -u)" -ne 0 ]; then
+    command -v sudo >/dev/null 2>&1 || {
+        echo "This needs root; run it with sudo." >&2
+        exit 1
+    }
+    exec sudo -- "$0" "$@"
+fi
+
+assets="$self_dir/../share/feather-pdf/cups"
+mode=install
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --uninstall) mode=uninstall ;;
+    --assets)
+        shift
+        assets=$1
+        ;;
+    -h | --help)
+        echo "usage: feather-pdf-setup-printer [--uninstall] [--assets DIR]"
+        exit 0
+        ;;
+    *)
+        echo "unknown option: $1" >&2
+        exit 2
+        ;;
+    esac
+    shift
+done
+
+QUEUE=Feather-PDF
+URI=feather-pdf-print:/
+backend_dir="$(cups-config --serverbin)/backend"
+mime_dir="$(cups-config --datadir)/mime"
+[ -d "$backend_dir" ] || {
+    echo "CUPS backend directory not found ($backend_dir)." >&2
+    exit 1
+}
+
+restart_cups() {
+    systemctl restart cups 2>/dev/null ||
+        service cups restart 2>/dev/null ||
+        kill -HUP "$(cat /run/cups/cupsd.pid 2>/dev/null)" 2>/dev/null ||
+        true
+}
+
+if [ "$mode" = uninstall ]; then
+    lpadmin -x "$QUEUE" 2>/dev/null || true
+    rm -f "$backend_dir/feather-pdf-print" \
+        "$mime_dir/feather-pdf.types" "$mime_dir/feather-pdf.convs"
+    restart_cups
+    echo "Removed the Feather PDF printer."
+    exit 0
+fi
+
+for f in feather-pdf-print Feather-PDF.ppd feather-pdf.types feather-pdf.convs; do
+    [ -f "$assets/$f" ] || {
+        echo "Missing packaged file: $assets/$f" >&2
+        exit 1
+    }
+done
+
+install -m 0755 -o root -g root "$assets/feather-pdf-print" "$backend_dir/feather-pdf-print"
+install -m 0644 "$assets/feather-pdf.types" "$mime_dir/feather-pdf.types"
+install -m 0644 "$assets/feather-pdf.convs" "$mime_dir/feather-pdf.convs"
+restart_cups
+sleep 1 # let cupsd reload the MIME database before lpadmin uses it
+
+lpadmin -p "$QUEUE" -v "$URI" -P "$assets/Feather-PDF.ppd" -E \
+    -D "Print to Feather PDF" -L "This machine"
+cupsenable "$QUEUE" 2>/dev/null || true
+cupsaccept "$QUEUE" 2>/dev/null || true
+
+echo "Installed. 'Feather PDF' now appears in any app's print dialog."
+echo "Printed documents land in ~/Documents/Feather PDF/ and open in Feather PDF."

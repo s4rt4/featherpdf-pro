@@ -1,0 +1,36 @@
+# Feather PDF — continuous integration: build on Fedora with Qt 6.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build (Fedora / Qt 6)
+    runs-on: ubuntu-latest
+    container: fedora:43
+    steps:
+      - name: Install build dependencies
+        run: >
+          dnf install -y
+          gcc-c++ cmake ninja-build git
+          qt6-qtbase-devel qt6-qtpdf-devel qt6-qtsvg-devel qt6-qttools-devel
+          qpdf-devel poppler-qt6-devel
+
+      - name: Check out the source
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Verify the binary was produced
+        run: test -x build/src/feather-pdf
+
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure

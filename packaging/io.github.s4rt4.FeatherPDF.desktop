@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Feather PDF
+GenericName=PDF Viewer
+Comment=Light on the system, full-featured on PDF
+Exec=feather-pdf %f
+TryExec=feather-pdf
+Icon=io.github.s4rt4.FeatherPDF
+Terminal=false
+Categories=Office;Viewer;Graphics;
+MimeType=application/pdf;
+Keywords=PDF;document;viewer;annotate;
+StartupNotify=true
+StartupWMClass=io.github.s4rt4.FeatherPDF

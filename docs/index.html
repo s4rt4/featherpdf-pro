@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feather PDF, light on the system, full-featured on PDF</title>
+<meta name="description" content="Feather PDF is an open-source, native PDF application for Linux with Adobe Acrobat-class capability and no web view. Read, organize, annotate, fill forms, sign, redact, OCR, and convert.">
+<meta property="og:title" content="Feather PDF">
+<meta property="og:description" content="Light on the system, full-featured on PDF. A native, open-source PDF app for Linux.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="hero.png">
+<link rel="icon" href="feather-logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+      crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="#top">
+    <img src="feather-logo.svg" alt="" width="30" height="30">
+    <span>Feather PDF</span>
+  </a>
+  <nav class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#try">Try it</a>
+    <a href="#signing">Signing</a>
+    <a href="#built">How it's built</a>
+    <a class="ghost" href="https://github.com/s4rt4/featherpdf-linux"><i class="fa-brands fa-github"></i> GitHub</a>
+  </nav>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <img class="hero-logo" src="feather-logo.svg" alt="Feather PDF logo" width="104" height="104">
+    <h1>Feather PDF</h1>
+    <p class="tagline">Light on the system, full-featured on PDF.</p>
+    <p class="lede">
+      An open-source, native PDF application for Linux, aiming at Adobe Acrobat-class
+      capability <strong>without a web view</strong>. It wears Acrobat's bones (a tabbed
+      workspace, a per-document command toolbar, a contextual Tools pane) with a quieter,
+      modern GNOME skin.
+    </p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/s4rt4/featherpdf-linux/releases/download/v0.0.1/feather-pdf-0.0.1-1.x86_64.rpm"><i class="fa-solid fa-download"></i> Download .rpm (0.0.1)</a>
+      <a class="btn primary" href="https://github.com/s4rt4/featherpdf-linux/releases/download/v0.0.1/feather-pdf_0.0.1_amd64.deb"><i class="fa-solid fa-download"></i> Download .deb (0.0.1)</a>
+      <a class="btn" href="https://github.com/s4rt4/featherpdf-linux"><i class="fa-brands fa-github"></i> View on GitHub</a>
+    </div>
+    <p class="muted release-note">.rpm for Fedora, .deb for Debian / Ubuntu (x86_64). All versions on the
+      <a href="https://github.com/s4rt4/featherpdf-linux/releases">releases page</a>.</p>
+    <div class="badges">
+      <span class="badge"><i class="fa-solid fa-scale-balanced"></i> GPLv3</span>
+      <span class="badge"><i class="fa-solid fa-code"></i> C++ / Qt 6</span>
+      <span class="badge"><i class="fa-brands fa-linux"></i> Linux native</span>
+      <span class="badge"><i class="fa-solid fa-ban"></i> No web view</span>
+    </div>
+  </section>
+
+  <section class="showcase">
+    <img src="hero.png" alt="The Feather PDF workspace: tabbed documents, page thumbnails, and the Tools pane, in the dark theme" width="1444" height="372" fetchpriority="high">
+  </section>
+
+  <section class="stats" aria-label="Feather PDF in numbers">
+    <div class="stat reveal"><span class="stat-num" data-count="21">0</span><span class="stat-label">headless CLI commands</span></div>
+    <div class="stat reveal"><span class="stat-num" data-count="9">0</span><span class="stat-label">annotation tools</span></div>
+    <div class="stat reveal"><span class="stat-num" data-count="27">0</span><span class="stat-label">automated test suites</span></div>
+    <div class="stat reveal"><span class="stat-num" data-count="0">0</span><span class="stat-label">telemetry, tracking, or cloud</span></div>
+  </section>
+
+  <section class="philosophy reveal">
+    <h2>One clean façade over mature engines</h2>
+    <p>
+      Feather doesn't reinvent a PDF engine. It orchestrates the best open-source libraries
+      behind a single, coherent interface, and deliberately avoids in-process AGPL libraries
+      to stay GPLv3.
+    </p>
+  </section>
+
+  <section id="features" class="features">
+    <h2>Everything you do to a PDF, in one place</h2>
+    <p class="features-hint"><i class="fa-solid fa-hand-pointer"></i> Click a card for the details.</p>
+    <div class="grid">
+
+      <article class="card reveal">
+        <button class="card-head" aria-expanded="false">
+          <h3><i class="fa-solid fa-book-open"></i> Read &amp; navigate</h3>
+          <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+        </button>
+        <p>A custom off-thread render pipeline with an LRU cache, so even a 4000-page
+        document opens instantly.</p>
+        <div class="card-more"><ul>
+          <li>Tabbed workspace, thumbnails, live find</li>
+          <li>Editable outline and document properties</li>
+          <li>Immersive reading mode with a floating page pill</li>
+          <li>Follow-along read-aloud via speech-dispatcher</li>
+        </ul></div>
+      </article>
+
+      <article class="card reveal">
+        <button class="card-head" aria-expanded="false">
+          <h3><i class="fa-solid fa-layer-group"></i> Organize pages</h3>
+          <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+        </button>
+        <p>Restructure documents losslessly: pages are rewritten, never re-rendered.</p>
+        <div class="card-more"><ul>
+          <li>Rotate, delete, drag-to-reorder</li>
+          <li>Extract, insert, and crop page ranges</li>
+          <li>Merge and split documents</li>
+          <li>Edit the bookmark tree</li>
+        </ul></div>
+      </article>
+
+      <article class="card reveal">
+        <button class="card-head" aria-expanded="false">
+          <h3><i class="fa-solid fa-highlighter"></i> Annotate &amp; mark up</h3>
+          <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+        </button>
+        <p>Nine drag-to-place tools that write real PDF annotations any reader understands.</p>
+        <div class="card-more"><ul>
+          <li>Highlight, underline, strikeout, sticky notes</li>
+          <li>Ink, shapes, lines, arrows, text boxes</li>
+          <li>Stamps: Approved, Draft, Confidential, For Review</li>
+          <li>Measure distance, perimeter, area; snapshot a region</li>
+        </ul></div>
+      </article>
+
+      <article class="card reveal">
+        <button class="card-head" aria-expanded="false">
+          <h3><i class="fa-solid fa-list-check"></i> Forms</h3>
+          <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+        </button>
+        <p>Fill existing forms, or author new ones from scratch.</p>
+        <div class="card-more"><ul>
+          <li>Text, checkbox, dropdown, radio, and button fields</li>
+          <li>Drag-to-place with a live preview</li>
+          <li>Prepare Form: auto-detect fields on plain layouts</li>
+          <li>Date/number/currency validation; XFDF import/export</li>
+        </ul></div>
+      </article>
+
+      <article class="card reveal">
+        <button class="card-head" aria-expanded="false">
+          <h3><i class="fa-solid fa-shield-halved"></i> Secure &amp; redact</h3>
+          <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+        </button>
+        <p>True redaction that removes content, not a black box that merely covers it.</p>
+        <div class="card-more"><ul>
+          <li>AES-256 encryption with permission controls</li>
+          <li>Find &amp; Redact by pattern: emails, phones, IDs, custom regex</li>
+          <li>Sanitizer strips metadata, attachments, and scripts</li>
+          <li><a href="#try">See the pattern finder in action below</a></li>
+        </ul></div>
+      </article>
+
+      <article class="card reveal">
+        <button class="card-head" aria-expanded="false">
+          <h3><i class="fa-solid fa-file-signature"></i> Sign &amp; validate</h3>
+          <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+        </button>
+        <p>Signatures built to still verify in ten years.</p>
+        <div class="card-more"><ul>
+          <li>Text or graphical appearance (PAdES / NSS)</li>
+          <li>PKCS#11 hardware tokens: smartcards, YubiKeys</li>
+          <li>RFC 3161 trusted timestamps</li>
+          <li><a href="#signing">Long-term validation, step by step</a></li>
+        </ul></div>
+      </article>
+
+      <article class="card reveal">
+        <button class="card-head" aria-expanded="false">
+          <h3><i class="fa-solid fa-magnifying-glass"></i> Scan &amp; OCR</h3>
+          <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+        </button>
+        <p>From paper to searchable PDF in one pass.</p>
+        <div class="card-more"><ul>
+          <li>Scan straight to PDF from any SANE device</li>
+          <li>Tesseract OCR with automatic language detection</li>
+          <li>Deskew, despeckle, and binarize pre-processing</li>
+          <li>OCR and image-to-PDF also available headless</li>
+        </ul></div>
+      </article>
+
+      <article class="card reveal">
+        <button class="card-head" aria-expanded="false">
+          <h3><i class="fa-solid fa-file-export"></i> Convert &amp; export</h3>
+          <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+        </button>
+        <p>In and out of PDF without leaving the app.</p>
+        <div class="card-more"><ul>
+          <li>Office and image conversion via LibreOffice</li>
+          <li>Export to Word, ODT, RTF, and plain text</li>
+          <li>Pages to PNG/JPEG/TIFF; extract embedded images</li>
+          <li>PDF/A with preflight; RGB to CMYK; optimize and flatten</li>
+        </ul></div>
+      </article>
+
+      <article class="card reveal">
+        <button class="card-head" aria-expanded="false">
+          <h3><i class="fa-solid fa-gears"></i> Automate</h3>
+          <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+        </button>
+        <p>Everything works headless too.</p>
+        <div class="card-more"><ul>
+          <li>A 21-command CLI, pipe-friendly</li>
+          <li>Batch wizard: chain operations, save them as actions</li>
+          <li>Watch folders, systemd-friendly daemon</li>
+          <li>Thumbnails, right-click actions, and a virtual printer</li>
+        </ul></div>
+      </article>
+
+    </div>
+  </section>
+
+  <section id="try" class="try">
+    <div class="try-inner">
+      <h2>No install needed for this part</h2>
+      <p class="try-lede">Two little demos, right here in the page.</p>
+      <div class="demo-grid">
+
+        <div class="demo reveal">
+          <div class="demo-head">
+            <span class="demo-title"><i class="fa-solid fa-eraser"></i> Find &amp; Redact</span>
+            <button class="btn primary small" id="redactBtn" type="button">Find &amp; redact</button>
+          </div>
+          <p class="redact-text" id="redactText">Hi Maya, the final contract is attached.
+            Send the countersigned copy to <span class="pii">maya.putri@example.com</span>
+            or WhatsApp <span class="pii">+62 812 3456 7890</span> before Friday.
+            The deposit goes to card <span class="pii">4556 7375 8689 9855</span>. Thanks!</p>
+          <p class="demo-note" id="redactStatus">Pattern presets: email, phone number, card number.</p>
+        </div>
+
+        <div class="demo term reveal">
+          <div class="term-bar" aria-hidden="true">
+            <span class="tdot r"></span><span class="tdot y"></span><span class="tdot g"></span>
+            <span class="term-title">the same app, headless</span>
+          </div>
+          <pre class="term-body" id="termBody" aria-label="Feather PDF command-line examples"></pre>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="signing" class="signing">
+    <div class="signing-inner">
+      <h2><i class="fa-solid fa-stamp"></i> Signatures that still verify in ten years</h2>
+      <p>
+        A signature is only as trustworthy as the certificate behind it, and certificates
+        expire. Feather embeds the proof a verifier needs directly into the document, so it
+        keeps validating long after the certificate is gone. Walk through it:
+      </p>
+      <div class="steps" role="tablist" aria-label="Long-term signing pipeline">
+        <button class="step active" type="button" data-step="0"><i class="fa-solid fa-pen-nib"></i><span>Sign</span></button>
+        <button class="step" type="button" data-step="1"><i class="fa-solid fa-clock"></i><span>Timestamp</span></button>
+        <button class="step" type="button" data-step="2"><i class="fa-solid fa-box-archive"></i><span>Embed proof</span></button>
+        <button class="step" type="button" data-step="3"><i class="fa-solid fa-infinity"></i><span>Archive</span></button>
+      </div>
+      <div class="sig-progress" aria-hidden="true"><div class="sig-bar" id="sigBar"></div></div>
+      <p class="step-detail" id="sigDetail" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section id="built" class="built">
+    <h2>How it's built</h2>
+    <p class="built-lede">Render with one library, reason with another, restructure with a third.</p>
+    <div class="stack">
+      <div class="layer reveal"><i class="fa-solid fa-image"></i><div><span class="layer-name">PDFium</span><span class="layer-role">Rendering pixels, via Qt's QtPdf</span></div></div>
+      <div class="layer reveal"><i class="fa-solid fa-magnifying-glass"></i><div><span class="layer-name">Poppler-Qt6</span><span class="layer-role">Text, search, forms, annotations</span></div></div>
+      <div class="layer reveal"><i class="fa-solid fa-screwdriver-wrench"></i><div><span class="layer-name">QPDF</span><span class="layer-role">Lossless structure: merge, split, encrypt, metadata</span></div></div>
+      <div class="layer reveal"><i class="fa-solid fa-font"></i><div><span class="layer-name">Tesseract</span><span class="layer-role">Optical character recognition</span></div></div>
+      <div class="layer reveal"><i class="fa-solid fa-file-word"></i><div><span class="layer-name">LibreOffice</span><span class="layer-role">Office &amp; document conversion</span></div></div>
+      <div class="layer reveal"><i class="fa-solid fa-lock"></i><div><span class="layer-name">OpenSSL · NSS</span><span class="layer-role">Digital signatures &amp; timestamps</span></div></div>
+      <div class="layer reveal"><i class="fa-solid fa-pen-nib"></i><div><span class="layer-name">HarfBuzz · FreeType</span><span class="layer-role">Text shaping &amp; fonts</span></div></div>
+      <div class="layer reveal"><i class="fa-brands fa-qt"></i><div><span class="layer-name">Qt 6 / C++</span><span class="layer-role">The native application shell</span></div></div>
+    </div>
+  </section>
+
+  <section class="closing reveal">
+    <h2>Free software, no web view, nothing leaves your machine</h2>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/s4rt4/featherpdf-linux/releases/download/v0.0.1/feather-pdf-0.0.1-1.x86_64.rpm"><i class="fa-solid fa-download"></i> Download .rpm (0.0.1)</a>
+      <a class="btn primary" href="https://github.com/s4rt4/featherpdf-linux/releases/download/v0.0.1/feather-pdf_0.0.1_amd64.deb"><i class="fa-solid fa-download"></i> Download .deb (0.0.1)</a>
+      <a class="btn" href="https://github.com/s4rt4/featherpdf-linux"><i class="fa-brands fa-github"></i> Get the source on GitHub</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p>
+    Feather PDF, licensed under the
+    <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU GPLv3</a>.
+    Built for Linux.
+  </p>
+  <p class="muted">Not affiliated with Adobe. &ldquo;Acrobat&rdquo; is a trademark of its respective owner.</p>
+</footer>
+
+</body>
+</html>

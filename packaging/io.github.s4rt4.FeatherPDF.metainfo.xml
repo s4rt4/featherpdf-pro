@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.s4rt4.FeatherPDF</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>Feather PDF</name>
+  <summary>Light on the system, full-featured on PDF</summary>
+
+  <description>
+    <p>
+      Feather PDF is a native, open-source PDF application for Linux, aiming at
+      Adobe Acrobat-class capability without a web view. It pairs an
+      Acrobat-style tabbed workspace with native GNOME theming.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>A custom render pipeline that opens large documents instantly and scrolls smoothly</li>
+      <li>A tabbed workspace, one document per tab</li>
+      <li>Home start screen with recent files and drag-and-drop</li>
+      <li>Thumbnail sidebar and outline (bookmarks)</li>
+      <li>Text search with live highlighting</li>
+      <li>An immersive reading mode</li>
+      <li>System light/dark theming</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">io.github.s4rt4.FeatherPDF.desktop</launchable>
+
+  <categories>
+    <category>Office</category>
+    <category>Viewer</category>
+  </categories>
+
+  <url type="homepage">https://github.com/s4rt4/featherpdf-linux</url>
+  <url type="bugtracker">https://github.com/s4rt4/featherpdf-linux/issues</url>
+
+  <provides>
+    <binary>feather-pdf</binary>
+  </provides>
+
+  <content_rating type="oars-1.1" />
+
+  <developer id="io.github.s4rt4">
+    <name>Feather PDF contributors</name>
+  </developer>
+</component>

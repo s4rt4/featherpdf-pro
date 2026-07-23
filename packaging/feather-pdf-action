@@ -1,0 +1,61 @@
+#!/bin/sh
+# Feather PDF — file-manager action helper.
+#
+# Runs one headless feather-pdf operation on the PDF(s) a user picked in their
+# file manager, writes the result beside each source, and reports through a
+# desktop notification. Shared by the Nautilus extension and the KDE service
+# menu so the output-naming and feedback live in exactly one place.
+#
+# Usage: feather-pdf-action <compress|sanitize|to-text> FILE [FILE...]
+
+action=${1:-}
+[ $# -gt 0 ] && shift
+
+# Prefer feather-pdf on PATH; fall back to the copy beside this helper (both are
+# installed into the same bin directory).
+FEATHER=feather-pdf
+command -v "$FEATHER" >/dev/null 2>&1 || FEATHER="$(dirname "$0")/feather-pdf"
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 &&
+        notify-send -a "Feather PDF" -i io.github.s4rt4.FeatherPDF "$1" "$2"
+}
+
+if [ -z "$action" ] || [ $# -eq 0 ]; then
+    echo "usage: feather-pdf-action <compress|sanitize|to-text> FILE..." >&2
+    exit 2
+fi
+
+ok=0
+fail=0
+last=
+for f in "$@"; do
+    stem=${f%.*}
+    case "$action" in
+    compress) out="${stem}-compressed.pdf"; cmd=optimize ;;
+    sanitize) out="${stem}-clean.pdf"; cmd=sanitize ;;
+    to-text) out="${stem}.txt"; cmd=to-text ;;
+    *)
+        echo "unknown action: $action" >&2
+        exit 2
+        ;;
+    esac
+    if "$FEATHER" "$cmd" "$f" "$out"; then
+        ok=$((ok + 1))
+        last=$out
+    else
+        fail=$((fail + 1))
+    fi
+done
+
+if [ "$fail" -eq 0 ]; then
+    if [ "$ok" -gt 1 ]; then
+        notify "Feather PDF" "Done | wrote $ok files."
+    else
+        notify "Feather PDF" "Done | wrote $(basename "$last")"
+    fi
+    exit 0
+else
+    notify "Feather PDF" "$ok done, $fail failed."
+    exit 1
+fi

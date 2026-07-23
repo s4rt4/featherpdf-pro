@@ -1,0 +1,57 @@
+# Feather PDF — Flatpak manifest.
+#
+# STATUS: starting scaffold — NOT yet built/verified with flatpak-builder.
+# Before relying on it, verify against a real build:
+#   flatpak-builder --user --install --force-clean build-flatpak \
+#     packaging/flatpak/io.github.s4rt4.FeatherPDF.yaml
+# Likely things to confirm/adjust:
+#   - the org.kde.Platform version that is installed locally (Qt 6.x);
+#   - that QtPdf (PDFium) and QtSvg are present in that runtime (they normally
+#     are) — otherwise add modules to build them;
+#   - qpdf's crypto choice below (native is used to avoid extra dependencies).
+id: io.github.s4rt4.FeatherPDF
+
+runtime: org.kde.Platform
+runtime-version: '6.9'
+sdk: org.kde.Sdk
+
+command: feather-pdf
+
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # Opening and saving the user's PDFs. Narrow to --filesystem=xdg-documents if
+  # full home access is too broad for your distribution.
+  - --filesystem=home
+
+modules:
+  # Lossless structure backend. Built with qpdf's native crypto provider so we
+  # don't pull in gnutls/openssl as extra modules.
+  - name: qpdf
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_STATIC_LIBS=OFF
+      - -DREQUIRE_CRYPTO_GNUTLS=OFF
+      - -DREQUIRE_CRYPTO_OPENSSL=OFF
+      - -DUSE_IMPLICIT_CRYPTO=ON
+    sources:
+      - type: git
+        url: https://github.com/qpdf/qpdf.git
+        tag: v12.3.2
+    cleanup:
+      - /bin
+      - /include
+      - /lib/cmake
+      - /lib/pkgconfig
+      - '*.a'
+
+  - name: feather-pdf
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    sources:
+      - type: dir
+        path: ../..

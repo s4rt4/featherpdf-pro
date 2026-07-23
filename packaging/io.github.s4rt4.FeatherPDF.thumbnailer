@@ -1,0 +1,4 @@
+[Thumbnailer Entry]
+TryExec=feather-pdf
+Exec=feather-pdf thumbnail %i %o --size %s
+MimeType=application/pdf;

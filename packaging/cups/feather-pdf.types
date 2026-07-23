@@ -1,0 +1,5 @@
+# Feather PDF — pseudo MIME type produced for the virtual printer's backend.
+# CUPS reads this at start-up (from /usr/share/cups/mime). The type carries no
+# detection rule of its own; it only exists as the target of the conversion in
+# feather-pdf.convs, which the printer's *cupsFilter requests.
+application/vnd.cups-pdf

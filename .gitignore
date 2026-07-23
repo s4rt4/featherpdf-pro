@@ -1,0 +1,57 @@
+# --- Local planning & reference docs (kept locally, not tracked) ---
+# Anchored to the repo root so tracked copies elsewhere (e.g. the logo bundled
+# under resources/icons/) are NOT ignored.
+/plan.md
+/ui-guidelines.md
+/feather-linux-saran.md
+/feather-logo.svg
+/feather-mockup.html
+
+# --- Build output ---
+/build/
+/build-*/
+/out/
+*.o
+*.obj
+*.a
+*.so
+*.so.*
+*.dylib
+*.exe
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+.cache/
+
+# --- Qt ---
+*.moc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.qmlc
+*.jsc
+.qmake.stash
+*.pro.user*
+
+# --- Flatpak / packaging ---
+/.flatpak-builder/
+/flatpak-build/
+/repo/
+*.flatpak
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# --- Misc ---
+*.log
+
+# Python bytecode (from packaging/test tooling)
+__pycache__/
+*.pyc
