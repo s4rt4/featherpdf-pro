@@ -27,8 +27,15 @@
 #include <QLibraryInfo>
 #include <QLocale>
 #include <QSettings>
+#include <QStandardPaths>
 #include <QTimer>
 #include <QTranslator>
+
+#ifdef Q_OS_WIN
+#include <windows.h>
+
+#include <cstdio>
+#endif
 
 namespace {
 void setAppIdentity() {
@@ -46,6 +53,18 @@ int main(int argc, char** argv) {
     // display (operations only rasterize to memory, never to a screen).
     const QString firstArg = argc > 1 ? QString::fromLocal8Bit(argv[1]) : QString();
     if (Cli::isCommand(firstArg)) {
+#ifdef Q_OS_WIN
+        // feather-pdf.exe is a GUI-subsystem binary, so cmd/PowerShell detach it
+        // from the console and CLI output would vanish. Re-attach to the parent
+        // console and rewire the standard streams so sub-commands behave like a
+        // normal console program.
+        if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+            FILE* unused;
+            freopen_s(&unused, "CONOUT$", "w", stdout);
+            freopen_s(&unused, "CONOUT$", "w", stderr);
+            freopen_s(&unused, "CONIN$", "r", stdin);
+        }
+#endif
         if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM"))
             qputenv("QT_QPA_PLATFORM", "offscreen");
         QGuiApplication cliApp(argc, argv);
@@ -55,7 +74,7 @@ int main(int argc, char** argv) {
 
     QApplication app(argc, argv);
     setAppIdentity();
-    // Lets the GNOME shell / Wayland associate the window with its .desktop file.
+    // No-op on Windows; keeps the app id stable for any future Linux build.
     QGuiApplication::setDesktopFileName(QStringLiteral(FEATHERPDF_APP_ID));
     QApplication::setWindowIcon(QIcon(QStringLiteral(":/icons/feather-logo.svg")));
 
@@ -79,10 +98,13 @@ int main(int argc, char** argv) {
     // light/dark preference (ui-guidelines §2).
     Theme::instance().apply();
 
-    // Point the signing stack at the shared NSS store, so signing certificates
-    // and any registered PKCS#11 security devices resolve from one place. Must
-    // happen before the first signature operation.
-    Signer::useNssDatabase(QDir::homePath() + QStringLiteral("/.pki/nssdb"));
+    // Point the signing stack at Feather's own NSS store (Windows has no shared
+    // ~/.pki/nssdb convention), so signing certificates and any registered
+    // PKCS#11 security devices resolve from one place. Must happen before the
+    // first signature operation.
+    Signer::useNssDatabase(
+        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) +
+        QStringLiteral("/nssdb"));
 
     MainWindow window;
     window.show();

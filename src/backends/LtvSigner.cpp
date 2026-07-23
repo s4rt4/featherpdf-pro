@@ -16,6 +16,8 @@
 
 #include "backends/LtvSigner.h"
 
+#include "backends/ToolLocator.h"
+
 #include <QByteArray>
 #include <QByteArrayView>
 #include <QCryptographicHash>
@@ -330,7 +332,7 @@ bool LtvSigner::addValidationInfo(const QString& inputPath, const QString& outpu
         return false;
     };
 
-    const QString openssl = QStandardPaths::findExecutable(QStringLiteral("openssl"));
+    const QString openssl = ToolLocator::openssl();
     if (openssl.isEmpty())
         return fail(QObject::tr("Long-term validation needs 'openssl' on your PATH."));
 
@@ -592,7 +594,7 @@ bool LtvSigner::addDocumentTimestamp(const QString& inputPath, const QString& ou
         return false;
     };
 
-    const QString openssl = QStandardPaths::findExecutable(QStringLiteral("openssl"));
+    const QString openssl = ToolLocator::openssl();
     const QString curl = QStandardPaths::findExecutable(QStringLiteral("curl"));
     if (openssl.isEmpty() || curl.isEmpty())
         return fail(QObject::tr("Archive timestamping needs 'openssl' and 'curl' on your PATH."));

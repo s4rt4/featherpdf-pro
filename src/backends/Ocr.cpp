@@ -17,6 +17,7 @@
 #include "backends/Ocr.h"
 
 #include "backends/OcrPreprocess.h"
+#include "backends/ToolLocator.h"
 
 #include <QDir>
 #include <QFile>
@@ -41,7 +42,7 @@
 
 namespace {
 QString tesseract() {
-    return QStandardPaths::findExecutable(QStringLiteral("tesseract"));
+    return ToolLocator::tesseract();
 }
 
 std::string num(double v) {

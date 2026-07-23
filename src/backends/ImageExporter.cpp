@@ -16,6 +16,8 @@
 
 #include "backends/ImageExporter.h"
 
+#include "backends/ToolLocator.h"
+
 #include <QDir>
 #include <QImage>
 #include <QPainter>
@@ -163,12 +165,12 @@ bool ImageExporter::renderThumbnail(const QString& inputPath, const QString& out
 }
 
 bool ImageExporter::hasImageExtractor() {
-    return !QStandardPaths::findExecutable(QStringLiteral("pdfimages")).isEmpty();
+    return !ToolLocator::pdfimages().isEmpty();
 }
 
 int ImageExporter::extractEmbedded(const QString& inputPath, const QString& outDir,
                                    const QString& baseName, QString* error) {
-    const QString tool = QStandardPaths::findExecutable(QStringLiteral("pdfimages"));
+    const QString tool = ToolLocator::pdfimages();
     if (tool.isEmpty()) {
         if (error)
             *error = QStringLiteral("Extracting embedded images needs pdfimages (Poppler).");

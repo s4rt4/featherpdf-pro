@@ -16,6 +16,8 @@
 
 #include "backends/Signer.h"
 
+#include "backends/ToolLocator.h"
+
 #include <QDateTime>
 #include <QDir>
 #include <QFile>
@@ -52,10 +54,14 @@ QString statusText(Poppler::SignatureValidationInfo::SignatureStatus s, bool* va
     }
 }
 
-// The NSS database the signing stack uses. Empty means the shared user store.
+// The NSS database the signing stack uses. Empty means Feather's own store
+// under the per-user app-data directory (Windows has no shared ~/.pki/nssdb).
 QString g_nssDir;
 QString currentNssDir() {
-    return g_nssDir.isEmpty() ? QDir::homePath() + QStringLiteral("/.pki/nssdb") : g_nssDir;
+    return g_nssDir.isEmpty()
+               ? QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) +
+                     QStringLiteral("/nssdb")
+               : g_nssDir;
 }
 QString nssDbArg() { return QStringLiteral("sql:") + currentNssDir(); }
 
@@ -85,7 +91,7 @@ bool ensureNssDb(QString* error) {
     QDir().mkpath(currentNssDir());
     if (QFileInfo::exists(currentNssDir() + QStringLiteral("/cert9.db")))
         return true;
-    const QString certutil = QStandardPaths::findExecutable(QStringLiteral("certutil"));
+    const QString certutil = ToolLocator::nssTool(QStringLiteral("certutil"));
     if (certutil.isEmpty()) {
         if (error)
             *error = QObject::tr("'certutil' (nss-tools) is needed to set up the certificate store.");
@@ -109,7 +115,7 @@ void Signer::useNssDatabase(const QString& dir) {
 }
 
 bool Signer::hasSecurityDeviceTools() {
-    return !QStandardPaths::findExecutable(QStringLiteral("modutil")).isEmpty();
+    return !ToolLocator::nssTool(QStringLiteral("modutil")).isEmpty();
 }
 
 bool Signer::addSecurityDevice(const QString& name, const QString& modulePath, QString* error) {
@@ -118,7 +124,7 @@ bool Signer::addSecurityDevice(const QString& name, const QString& modulePath, Q
             *error = m;
         return false;
     };
-    const QString modutil = QStandardPaths::findExecutable(QStringLiteral("modutil"));
+    const QString modutil = ToolLocator::nssTool(QStringLiteral("modutil"));
     if (modutil.isEmpty())
         return fail(QObject::tr("'modutil' (nss-tools) isn't installed."));
     if (name.trimmed().isEmpty())
@@ -137,7 +143,7 @@ bool Signer::addSecurityDevice(const QString& name, const QString& modulePath, Q
 }
 
 bool Signer::removeSecurityDevice(const QString& name, QString* error) {
-    const QString modutil = QStandardPaths::findExecutable(QStringLiteral("modutil"));
+    const QString modutil = ToolLocator::nssTool(QStringLiteral("modutil"));
     if (modutil.isEmpty()) {
         if (error)
             *error = QObject::tr("'modutil' (nss-tools) isn't installed.");
@@ -157,7 +163,7 @@ bool Signer::removeSecurityDevice(const QString& name, QString* error) {
 
 QStringList Signer::securityDevices() {
     QStringList names;
-    const QString modutil = QStandardPaths::findExecutable(QStringLiteral("modutil"));
+    const QString modutil = ToolLocator::nssTool(QStringLiteral("modutil"));
     if (modutil.isEmpty())
         return names;
     QString out;
@@ -255,7 +261,7 @@ bool Signer::timestamp(const QString& filePath, const QString& tsaUrl,
             *error = m;
         return false;
     };
-    const QString openssl = QStandardPaths::findExecutable(QStringLiteral("openssl"));
+    const QString openssl = ToolLocator::openssl();
     const QString curl = QStandardPaths::findExecutable(QStringLiteral("curl"));
     if (openssl.isEmpty() || curl.isEmpty())
         return fail(QObject::tr("Trusted timestamping needs 'openssl' and 'curl' on your PATH."));

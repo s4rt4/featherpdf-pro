@@ -16,6 +16,8 @@
 
 #include "backends/PdfA.h"
 
+#include "backends/ToolLocator.h"
+
 #include <QColorSpace>
 #include <QFile>
 #include <QFileInfo>
@@ -172,14 +174,14 @@ bool PdfA::convertToPdfA1b(const QString& inputPath, const QString& outputPath, 
 }
 
 bool PdfA::hasValidator() {
-    return !QStandardPaths::findExecutable(QStringLiteral("verapdf")).isEmpty();
+    return !ToolLocator::verapdf().isEmpty();
 }
 
 bool PdfA::validate(const QString& inputPath, PreflightReport* report, QString* error) {
     PreflightReport rep;
     rep.profile = QStringLiteral("PDF/A-1B");
 
-    const QString tool = QStandardPaths::findExecutable(QStringLiteral("verapdf"));
+    const QString tool = ToolLocator::verapdf();
     if (tool.isEmpty()) {
         // Graceful absence: not an error, just an unavailable verdict.
         rep.available = false;

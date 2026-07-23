@@ -24,23 +24,24 @@
 
 class QComboBox;
 class QLabel;
-class QProcess;
 class QSlider;
+class QTextToSpeech;
 class QToolButton;
 
 // The Read-aloud bar — a slim strip beneath the command toolbar that speaks the
-// document one sentence at a time via speech-dispatcher (the `spd-say` command).
-// Play/Pause/Stop, a speed slider, and a language picker; a live "sentence n of m"
-// status. Each sentence is one `spd-say -w` process, so playback advances when a
-// process finishes; pause/resume and stop work between sentences. It emits
-// pageReached() so the viewport can follow along. Esc (or ✕) closes it.
+// document one sentence at a time via Qt TextToSpeech (SAPI / WinRT voices on
+// Windows — fully local, nothing leaves the machine). Play/Pause/Stop, a speed
+// slider, and a language picker; a live "sentence n of m" status. Each sentence
+// is one say() call, so playback advances when the engine goes idle;
+// pause/resume and stop work between sentences. It emits pageReached() so the
+// viewport can follow along. Esc (or ✕) closes it.
 class ReadAloudBar : public QWidget {
     Q_OBJECT
 
 public:
     explicit ReadAloudBar(QWidget* parent = nullptr);
 
-    // True if speech-dispatcher's `spd-say` is on PATH (the only runtime need).
+    // True if a text-to-speech engine is available (on Windows: always, SAPI).
     static bool isAvailable();
 
     // Load `docPath`, show the bar, and start speaking from the top. `startPage`
@@ -62,9 +63,10 @@ private:
 
     QToolButton* addButton(const QString& iconName, const QString& tip);
     void refreshIcons();
-    void speakCurrent();      // launch spd-say for m_index
-    void cancelSpeech();      // kill our process + cancel any queued speech
-    void onProcessFinished(); // advance to the next sentence
+    QTextToSpeech* engine(); // lazily created, shared for the bar's lifetime
+    void speakCurrent();     // say() the sentence at m_index
+    void cancelSpeech();     // stop the engine and drop queued speech
+    void onSpeechIdle();     // advance to the next sentence
     void setState(State s);
     void updateStatus();
     void togglePlayPause();
@@ -73,7 +75,8 @@ private:
     QList<ReadAloud::Utterance> m_utterances;
     int m_index = 0;
     State m_state = State::Stopped;
-    QProcess* m_proc = nullptr;
+    QTextToSpeech* m_tts = nullptr;
+    bool m_speaking = false; // a say() is in flight (guards stray idle signals)
 
     QToolButton* m_playPause = nullptr;
     QToolButton* m_stop = nullptr;

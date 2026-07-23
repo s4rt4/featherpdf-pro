@@ -1,4 +1,4 @@
-# Feather PDF - application target.
+# Feather PDF Pro - application target.
 # Copyright (C) 2026 Feather PDF contributors. Licensed under GPLv3 (see LICENSE).
 
 qt_add_executable(feather-pdf
@@ -67,6 +67,8 @@ qt_add_executable(feather-pdf
     backends/Measurer.h
     backends/StampLibrary.cpp
     backends/StampLibrary.h
+    backends/ToolLocator.cpp
+    backends/ToolLocator.h
     backends/ReadAloud.cpp
     backends/ReadAloud.h
     backends/Scanner.cpp
@@ -208,8 +210,9 @@ target_link_libraries(feather-pdf PRIVATE
     Qt6::Svg
     Qt6::PrintSupport
     Qt6::Concurrent
-    PkgConfig::QPDF
-    PkgConfig::POPPLER_QT6
+    Qt6::TextToSpeech
+    feather::qpdf
+    feather::poppler-qt6
 )
 
 # Localization. lrelease compiles the .ts into .qm and qt_add_translations embeds
@@ -225,45 +228,17 @@ qt_add_translations(feather-pdf
 
 install(TARGETS feather-pdf RUNTIME DESTINATION bin)
 
-# Desktop integration - the .desktop file (app-id io.github.s4rt4.FeatherPDF) and
-# the brand logo installed into the hicolor icon theme under that same id, so the
-# GNOME/Wayland shell shows the logo in the dash/dock and as the window icon.
-install(FILES ${CMAKE_SOURCE_DIR}/packaging/io.github.s4rt4.FeatherPDF.desktop
-    DESTINATION share/applications)
-install(FILES ${CMAKE_SOURCE_DIR}/resources/icons/feather-logo.svg
-    DESTINATION share/icons/hicolor/scalable/apps
-    RENAME io.github.s4rt4.FeatherPDF.svg)
-install(FILES ${CMAKE_SOURCE_DIR}/packaging/io.github.s4rt4.FeatherPDF.metainfo.xml
-    DESTINATION share/metainfo)
-# Thumbnailer: registers `feather-pdf thumbnail` so file managers (Nautilus,
-# Dolphin via Tumbler) render page-one previews for PDFs instead of a generic icon.
-install(FILES ${CMAKE_SOURCE_DIR}/packaging/io.github.s4rt4.FeatherPDF.thumbnailer
-    DESTINATION share/thumbnailers)
+# Bundle the Qt (and other) runtime DLLs next to the exe on install/cpack, so
+# the ZIP is portable. windeployqt also copies the platform/imageformat plugins.
+if(WIN32)
+    qt_generate_deploy_app_script(
+        TARGET feather-pdf
+        OUTPUT_SCRIPT deploy_script
+        NO_TRANSLATIONS
+    )
+    install(SCRIPT ${deploy_script})
+endif()
 
-# Right-click actions. A shared POSIX helper runs a headless feather-pdf op on
-# the picked PDF(s) and reports via notify-send; the Nautilus extension (GNOME)
-# and the KDE service menu (Dolphin) both call it, so the behaviour lives once.
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/packaging/feather-pdf-action
-    DESTINATION bin)
-install(FILES ${CMAKE_SOURCE_DIR}/packaging/feather-pdf-nautilus.py
-    DESTINATION share/nautilus-python/extensions)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/packaging/io.github.s4rt4.FeatherPDF.servicemenu.desktop
-    DESTINATION share/kio/servicemenus)
-
-# "Print to Feather PDF" virtual CUPS printer. The backend, PPD, and MIME rules
-# ship as data; `feather-pdf-setup-printer` (run with sudo) copies the backend
-# into CUPS' private dirs and creates the queue, since that step needs root.
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/packaging/cups/feather-pdf-setup-printer
-    DESTINATION bin)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/packaging/cups/feather-pdf-print
-    DESTINATION share/feather-pdf/cups)
-install(FILES
-        ${CMAKE_SOURCE_DIR}/packaging/cups/Feather-PDF.ppd
-        ${CMAKE_SOURCE_DIR}/packaging/cups/feather-pdf.types
-        ${CMAKE_SOURCE_DIR}/packaging/cups/feather-pdf.convs
-    DESTINATION share/feather-pdf/cups)
-
-# Watch-folder automation: an example systemd user service for `feather-pdf
-# watch` (the user copies it to ~/.config/systemd/user and edits the paths).
-install(FILES ${CMAKE_SOURCE_DIR}/packaging/systemd/feather-pdf-watch.service
-    DESTINATION share/feather-pdf/systemd)
+# Windows shell integration (file association, "Open with Feather PDF Pro",
+# Explorer right-click actions) is written to the registry by the installer —
+# see packaging/windows — not by the build.

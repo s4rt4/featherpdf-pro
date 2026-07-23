@@ -18,6 +18,7 @@
 
 #include "backends/PdfEditor.h"
 #include "backends/Annotator.h"
+#include "backends/ToolLocator.h"
 #include "backends/CmykConverter.h"
 #include "backends/Comparer.h"
 #include "backends/Converter.h"
@@ -111,7 +112,10 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFileDialog>
+#include <QDesktopServices>
 #include <QFileInfo>
+#include <QUrl>
+#include <QUrlQuery>
 #include <QFormLayout>
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
@@ -695,14 +699,19 @@ void MainWindow::wireSignals() {
     connect(m_commandBar, &CommandBar::emailRequested, this, [this] {
         if (!hasActiveDoc())
             return;
-        // Hand the saved file to the system email client as an attachment.
-        if (QStandardPaths::findExecutable(QStringLiteral("xdg-email")).isEmpty() ||
-            !QProcess::startDetached(QStringLiteral("xdg-email"),
-                                     {QStringLiteral("--attach"), m_doc->filePath()})) {
+        // Open the default mail client with the file name pre-filled. mailto:
+        // can't attach files, so put the path in the body for the user to attach.
+        QUrl mailto(QStringLiteral("mailto:"));
+        QUrlQuery query;
+        query.addQueryItem(QStringLiteral("subject"), QFileInfo(m_doc->filePath()).fileName());
+        query.addQueryItem(QStringLiteral("body"),
+                           tr("Attached: %1").arg(QDir::toNativeSeparators(m_doc->filePath())));
+        mailto.setQuery(query);
+        if (!QDesktopServices::openUrl(mailto)) {
             QMessageBox::information(
                 this, tr("Email"),
-                tr("Couldn't reach an email client. Install xdg-utils, or attach the "
-                   "file manually from your mail app."));
+                tr("Couldn't reach an email client. Attach the file manually "
+                   "from your mail app."));
         }
     });
     connect(m_commandBar, &CommandBar::moreRequested, this, [this] {
@@ -1230,8 +1239,7 @@ void MainWindow::readAloud() {
     if (!hasActiveDoc())
         return;
     if (!ReadAloudBar::isAvailable()) {
-        m_toast->show(tr("Read aloud needs speech-dispatcher (install the “speech-dispatcher” "
-                         "package)."));
+        m_toast->show(tr("No text-to-speech voice is available on this system."));
         return;
     }
 
@@ -1374,9 +1382,7 @@ void MainWindow::editTextBoxes() {
 void MainWindow::editInLibreOffice() {
     if (!hasActiveDoc())
         return;
-    QString soffice = QStandardPaths::findExecutable(QStringLiteral("soffice"));
-    if (soffice.isEmpty())
-        soffice = QStandardPaths::findExecutable(QStringLiteral("libreoffice"));
+    const QString soffice = ToolLocator::soffice();
     if (soffice.isEmpty()) {
         QMessageBox::information(
             this, tr("LibreOffice not found"),
@@ -2165,7 +2171,7 @@ void MainWindow::createPdf() {
 
 void MainWindow::scanDocument() {
     if (!Scanner::isAvailable()) {
-        m_toast->show(tr("Scanning needs SANE (install the “sane-backends” package)."));
+        m_toast->show(tr("Scanning isn't available yet on Windows — it's on the roadmap (WIA)."));
         return;
     }
 

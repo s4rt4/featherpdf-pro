@@ -15,7 +15,7 @@ target_link_libraries(test_pdfeditor PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::QPDF
+    feather::qpdf
 )
 
 add_test(NAME pdfeditor COMMAND test_pdfeditor)
@@ -31,7 +31,7 @@ target_link_libraries(test_formeditor PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::QPDF
+    feather::qpdf
 )
 add_test(NAME formeditor COMMAND test_formeditor)
 set_tests_properties(formeditor PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -46,7 +46,7 @@ target_link_libraries(test_formdetector PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::POPPLER_QT6
+    feather::poppler-qt6
 )
 add_test(NAME formdetector COMMAND test_formdetector)
 set_tests_properties(formdetector PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -61,7 +61,7 @@ target_link_libraries(test_readaloud PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::POPPLER_QT6
+    feather::poppler-qt6
 )
 add_test(NAME readaloud COMMAND test_readaloud)
 set_tests_properties(readaloud PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -89,7 +89,7 @@ target_link_libraries(test_annotator PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::QPDF
+    feather::qpdf
 )
 add_test(NAME annotator COMMAND test_annotator)
 set_tests_properties(annotator PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -106,8 +106,8 @@ target_link_libraries(test_formroundtrip PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::QPDF
-    PkgConfig::POPPLER_QT6
+    feather::qpdf
+    feather::poppler-qt6
 )
 add_test(NAME formroundtrip COMMAND test_formroundtrip)
 set_tests_properties(formroundtrip PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -124,7 +124,7 @@ target_link_libraries(test_texteditor PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::QPDF
+    feather::qpdf
 )
 add_test(NAME texteditor COMMAND test_texteditor)
 set_tests_properties(texteditor PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -143,8 +143,8 @@ target_link_libraries(test_xfdf PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::QPDF
-    PkgConfig::POPPLER_QT6
+    feather::qpdf
+    feather::poppler-qt6
 )
 add_test(NAME xfdf COMMAND test_xfdf)
 set_tests_properties(xfdf PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -169,7 +169,7 @@ target_link_libraries(test_converter PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::POPPLER_QT6
+    feather::poppler-qt6
 )
 add_test(NAME converter COMMAND test_converter)
 set_tests_properties(converter PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -214,7 +214,7 @@ target_link_libraries(test_patternredactor PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::POPPLER_QT6
+    feather::poppler-qt6
 )
 add_test(NAME patternredactor COMMAND test_patternredactor)
 set_tests_properties(patternredactor PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -229,7 +229,7 @@ target_link_libraries(test_sanitizer PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::QPDF
+    feather::qpdf
 )
 add_test(NAME sanitizer COMMAND test_sanitizer)
 set_tests_properties(sanitizer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -244,7 +244,7 @@ target_link_libraries(test_pdfa PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::QPDF
+    feather::qpdf
 )
 add_test(NAME pdfa COMMAND test_pdfa)
 set_tests_properties(pdfa PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -259,7 +259,7 @@ target_link_libraries(test_optimizer PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::QPDF
+    feather::qpdf
 )
 add_test(NAME optimizer COMMAND test_optimizer)
 set_tests_properties(optimizer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -274,7 +274,7 @@ target_link_libraries(test_linkeditor PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::QPDF
+    feather::qpdf
 )
 add_test(NAME linkeditor COMMAND test_linkeditor)
 set_tests_properties(linkeditor PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -289,8 +289,8 @@ target_link_libraries(test_headerfooter PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::QPDF
-    PkgConfig::POPPLER_QT6
+    feather::qpdf
+    feather::poppler-qt6
 )
 add_test(NAME headerfooter COMMAND test_headerfooter)
 set_tests_properties(headerfooter PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -305,7 +305,7 @@ target_link_libraries(test_textcomparer PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::POPPLER_QT6
+    feather::poppler-qt6
 )
 add_test(NAME textcomparer COMMAND test_textcomparer)
 set_tests_properties(textcomparer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -334,7 +334,7 @@ target_link_libraries(test_stamplibrary PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test
-    PkgConfig::QPDF
+    feather::qpdf
 )
 add_test(NAME stamplibrary COMMAND test_stamplibrary)
 set_tests_properties(stamplibrary PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -366,8 +366,8 @@ target_link_libraries(test_signer PRIVATE
     Qt6::Gui
     Qt6::Network
     Qt6::Test
-    PkgConfig::POPPLER_QT6
-    PkgConfig::QPDF
+    feather::poppler-qt6
+    feather::qpdf
 )
 add_test(NAME signer COMMAND test_signer)
 set_tests_properties(signer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -391,8 +391,8 @@ target_link_libraries(test_batchrunner PRIVATE
     Qt6::Gui
     Qt6::Pdf
     Qt6::Test
-    PkgConfig::QPDF
-    PkgConfig::POPPLER_QT6
+    feather::qpdf
+    feather::poppler-qt6
 )
 add_test(NAME batchrunner COMMAND test_batchrunner)
 set_tests_properties(batchrunner PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

@@ -22,14 +22,10 @@
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QLabel>
-#include <QProcess>
+#include <QLocale>
 #include <QSlider>
-#include <QStandardPaths>
+#include <QTextToSpeech>
 #include <QToolButton>
-
-namespace {
-constexpr char kSpdSay[] = "spd-say";
-} // namespace
 
 ReadAloudBar::ReadAloudBar(QWidget* parent) : QWidget(parent) {
     setObjectName(QStringLiteral("ReadAloudBar"));
@@ -69,7 +65,7 @@ ReadAloudBar::ReadAloudBar(QWidget* parent) : QWidget(parent) {
     row->addWidget(speedLabel);
     m_speed = new QSlider(Qt::Horizontal, this);
     m_speed->setObjectName(QStringLiteral("ReadAloudSpeed"));
-    m_speed->setRange(-90, 90); // spd-say --rate
+    m_speed->setRange(-90, 90); // maps to QTextToSpeech::rate -0.9 … +0.9
     m_speed->setValue(0);
     m_speed->setFixedWidth(120);
     m_speed->setToolTip(tr("Reading speed"));
@@ -99,7 +95,20 @@ ReadAloudBar::ReadAloudBar(QWidget* parent) : QWidget(parent) {
 }
 
 bool ReadAloudBar::isAvailable() {
-    return !QStandardPaths::findExecutable(QString::fromLatin1(kSpdSay)).isEmpty();
+    return !QTextToSpeech::availableEngines().isEmpty();
+}
+
+QTextToSpeech* ReadAloudBar::engine() {
+    if (!m_tts) {
+        m_tts = new QTextToSpeech(this);
+        connect(m_tts, &QTextToSpeech::stateChanged, this, [this](QTextToSpeech::State s) {
+            if (s == QTextToSpeech::Ready && m_speaking) {
+                m_speaking = false;
+                onSpeechIdle();
+            }
+        });
+    }
+    return m_tts;
 }
 
 QToolButton* ReadAloudBar::addButton(const QString& iconName, const QString& tip) {
@@ -158,27 +167,19 @@ void ReadAloudBar::speakCurrent() {
 
     const ReadAloud::Utterance& u = m_utterances[m_index];
 
-    QStringList args{QStringLiteral("-w"), QStringLiteral("-r"),
-                     QString::number(m_speed->value())};
+    QTextToSpeech* tts = engine();
+    tts->setRate(m_speed->value() / 100.0);
     const QString lang = m_language->currentData().toString();
     if (!lang.isEmpty())
-        args << QStringLiteral("-l") << lang;
-    args << QStringLiteral("--") << u.text;
-
-    m_proc = new QProcess(this);
-    connect(m_proc, &QProcess::finished, this, &ReadAloudBar::onProcessFinished);
-    m_proc->start(QString::fromLatin1(kSpdSay), args);
+        tts->setLocale(QLocale(lang));
+    m_speaking = true;
+    tts->say(u.text);
 
     emit pageReached(u.page);
     updateStatus();
 }
 
-void ReadAloudBar::onProcessFinished() {
-    if (auto* p = qobject_cast<QProcess*>(sender()))
-        p->deleteLater();
-    if (m_proc == sender())
-        m_proc = nullptr;
-
+void ReadAloudBar::onSpeechIdle() {
     if (m_state != State::Playing)
         return; // paused or stopped between sentences
 
@@ -193,16 +194,9 @@ void ReadAloudBar::onProcessFinished() {
 }
 
 void ReadAloudBar::cancelSpeech() {
-    if (m_proc) {
-        disconnect(m_proc, nullptr, this, nullptr); // don't let kill() advance us
-        m_proc->kill();
-        m_proc->waitForFinished(200);
-        m_proc->deleteLater();
-        m_proc = nullptr;
-    }
-    // Tell the daemon to drop anything still queued/speaking.
-    if (isAvailable())
-        QProcess::startDetached(QString::fromLatin1(kSpdSay), {QStringLiteral("-C")});
+    m_speaking = false; // ignore the stop's Ready transition — don't advance
+    if (m_tts)
+        m_tts->stop();
 }
 
 void ReadAloudBar::togglePlayPause() {

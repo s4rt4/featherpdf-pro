@@ -16,6 +16,8 @@
 
 #include "backends/Converter.h"
 
+#include "backends/ToolLocator.h"
+
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -36,10 +38,7 @@ namespace {
 const QStringList kImageExts{"png", "jpg", "jpeg", "bmp", "gif", "tif", "tiff", "webp"};
 
 QString findSoffice() {
-    QString s = QStandardPaths::findExecutable(QStringLiteral("soffice"));
-    if (s.isEmpty())
-        s = QStandardPaths::findExecutable(QStringLiteral("libreoffice"));
-    return s;
+    return ToolLocator::soffice();
 }
 
 // Run `soffice --headless --convert-to <target>` on `inputPath` inside a private
@@ -109,8 +108,7 @@ bool Converter::isImage(const QString& path) {
 }
 
 bool Converter::hasOfficeConverter() {
-    return !QStandardPaths::findExecutable(QStringLiteral("soffice")).isEmpty() ||
-           !QStandardPaths::findExecutable(QStringLiteral("libreoffice")).isEmpty();
+    return !ToolLocator::soffice().isEmpty();
 }
 
 bool Converter::imagesToPdf(const QStringList& images, const QString& outputPath, QString* error) {

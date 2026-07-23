@@ -35,11 +35,11 @@ ui_*.h
 .qmake.stash
 *.pro.user*
 
-# --- Flatpak / packaging ---
-/.flatpak-builder/
-/flatpak-build/
-/repo/
-*.flatpak
+# --- Local third-party builds (scripts/build-poppler.ps1 output) ---
+/deps/
+
+# --- Packaging output ---
+/packaging/windows/Output/
 
 # --- Editor / IDE ---
 .vscode/

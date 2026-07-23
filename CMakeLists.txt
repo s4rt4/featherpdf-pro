@@ -1,12 +1,12 @@
-# Feather PDF — light on the system, full-featured on PDF.
+# Feather PDF Pro — light on the system, full-featured on PDF.
 # Copyright (C) 2026 Feather PDF contributors. Licensed under GPLv3 (see LICENSE).
 
 cmake_minimum_required(VERSION 3.21)
 
 project(FeatherPDF
     VERSION 0.0.1
-    DESCRIPTION "Native, open-source PDF tool for Linux"
-    HOMEPAGE_URL "https://github.com/s4rt4/featherpdf-linux"
+    DESCRIPTION "Native, open-source PDF tool for Windows"
+    HOMEPAGE_URL "https://github.com/s4rt4/featherpdf-pro"
     LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -20,21 +20,45 @@ endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# M0 needs: Core/Gui/Widgets (shell), Pdf/PdfWidgets (PDFium rendering),
-# Svg (symbolic icons), Concurrent (off-UI-thread work). Poppler/QPDF are added
-# when their modules land.
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Widgets Pdf PdfWidgets Svg PrintSupport Concurrent LinguistTools)
+# Core/Gui/Widgets (shell), Pdf/PdfWidgets (PDFium rendering), Svg (symbolic
+# icons), Concurrent (off-UI-thread work), PrintSupport, LinguistTools (i18n).
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Widgets Pdf PdfWidgets Svg PrintSupport Concurrent TextToSpeech LinguistTools)
 
 # Tests are built by default; turn off with -DBUILD_TESTING=OFF.
 option(BUILD_TESTING "Build the test suite" ON)
 
-# QPDF (lossless structure writer) ships no CMake config, so use pkg-config.
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(QPDF REQUIRED IMPORTED_TARGET libqpdf)
+# ── QPDF (lossless structure writer) ──
+# vcpkg ships a CMake config package; pkg-config stays as a fallback for
+# environments that have it (MSYS2, Linux).
+find_package(qpdf CONFIG QUIET)
+if(qpdf_FOUND)
+    add_library(feather_qpdf INTERFACE)
+    target_link_libraries(feather_qpdf INTERFACE qpdf::libqpdf)
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(QPDF REQUIRED IMPORTED_TARGET libqpdf)
+    add_library(feather_qpdf INTERFACE)
+    target_link_libraries(feather_qpdf INTERFACE PkgConfig::QPDF)
+endif()
+add_library(feather::qpdf ALIAS feather_qpdf)
 
-# Poppler-Qt6 (semantic layer — annotations, attachments, optional content). Its
-# CMake config is unreliable across distros, so use pkg-config like QPDF.
-pkg_check_modules(POPPLER_QT6 REQUIRED IMPORTED_TARGET poppler-qt6)
+# ── Poppler-Qt6 (semantic layer — annotations, forms, signatures) ──
+# Poppler ships no CMake config, and pkg-config isn't native on Windows, so
+# find the headers and import libraries directly. scripts/build-poppler.ps1
+# produces a prefix (deps/poppler) that CMAKE_PREFIX_PATH picks up here.
+find_path(POPPLER_QT6_INCLUDE_DIR poppler-qt6.h PATH_SUFFIXES poppler/qt6)
+find_library(POPPLER_QT6_LIBRARY NAMES poppler-qt6)
+if(POPPLER_QT6_INCLUDE_DIR AND POPPLER_QT6_LIBRARY)
+    add_library(feather_poppler_qt6 INTERFACE)
+    target_include_directories(feather_poppler_qt6 INTERFACE ${POPPLER_QT6_INCLUDE_DIR})
+    target_link_libraries(feather_poppler_qt6 INTERFACE ${POPPLER_QT6_LIBRARY})
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(POPPLER_QT6 REQUIRED IMPORTED_TARGET poppler-qt6)
+    add_library(feather_poppler_qt6 INTERFACE)
+    target_link_libraries(feather_poppler_qt6 INTERFACE PkgConfig::POPPLER_QT6)
+endif()
+add_library(feather::poppler-qt6 ALIAS feather_poppler_qt6)
 
 qt_standard_project_setup()
 
@@ -50,33 +74,18 @@ if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 
-# ── Packaging: `cpack -G RPM` / `cpack -G DEB` from the build dir ──
-set(CPACK_PACKAGE_NAME "feather-pdf")
+# ── Packaging: `cpack` from the build dir → feather-pdf-pro-<ver>-win64.zip ──
+# (NSIS installer lands with the packaging milestone; ZIP is the portable build.)
+set(CPACK_GENERATOR "ZIP")
+set(CPACK_PACKAGE_NAME "feather-pdf-pro")
 set(CPACK_PACKAGE_VENDOR "Feather PDF contributors")
 set(CPACK_PACKAGE_CONTACT "s4rt4 <noreply@github.com>")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${PROJECT_DESCRIPTION})
-set(CPACK_PACKAGE_DESCRIPTION "Feather PDF - light on the system, full-featured on PDF.
-A native, open-source PDF application for Linux: view, edit, sign,
+set(CPACK_PACKAGE_DESCRIPTION "Feather PDF Pro - light on the system, full-featured on PDF.
+A native, open-source PDF application for Windows: view, edit, sign,
 annotate, OCR, and convert PDFs. Runs headless as a CLI too.")
 set(CPACK_PACKAGE_HOMEPAGE_URL ${PROJECT_HOMEPAGE_URL})
 set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE)
-set(CPACK_STRIP_FILES ON)
-
-set(CPACK_DEBIAN_PACKAGE_SECTION "graphics")
-set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)   # auto-derive library Depends
-set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)  # feather-pdf_<ver>_amd64.deb
-
-set(CPACK_RPM_PACKAGE_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION}")
-set(CPACK_RPM_PACKAGE_LICENSE "GPL-3.0-or-later")
-set(CPACK_RPM_PACKAGE_GROUP "Applications/Publishing")
-set(CPACK_RPM_FILE_NAME RPM-DEFAULT)     # feather-pdf-<ver>.x86_64.rpm
-set(CPACK_RPM_PACKAGE_AUTOREQ ON)        # auto-derive library Requires
-# Don't claim ownership of standard dirs other packages own.
-set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
-    /usr/share/applications /usr/share/metainfo /usr/share/thumbnailers
-    /usr/share/icons /usr/share/icons/hicolor /usr/share/icons/hicolor/scalable
-    /usr/share/icons/hicolor/scalable/apps /usr/share/kio
-    /usr/share/kio/servicemenus /usr/share/nautilus-python
-    /usr/share/nautilus-python/extensions)
+set(CPACK_PACKAGE_FILE_NAME "feather-pdf-pro-${PROJECT_VERSION}-win64")
 
 include(CPack)

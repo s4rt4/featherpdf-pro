@@ -1,0 +1,12 @@
+# Normalize to LF in the repo; let editors use native endings locally.
+* text=auto
+
+# Windows scripts that must keep CRLF on checkout.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.iss text eol=crlf
+
+# Binary assets.
+*.png binary
+*.ico binary
+*.pdf binary

@@ -365,29 +365,29 @@ QList<Group> buildDocs() {
               "<p>Listen to a PDF instead of reading it - useful for proofreading or accessibility, "
               "and fully local.</p>",
               "<p>Feather extracts the page text with Poppler, splits it into sentences, and speaks "
-              "each through <b>speech-dispatcher</b> (the system's <code>spd-say</code>). Nothing "
-              "leaves your machine - the same engine screen readers use. The view follows along, "
-              "scrolling to the page being spoken.</p>",
+              "each through the <b>Windows voices</b> (SAPI - the same engine Narrator uses). "
+              "Nothing leaves your machine. The view follows along, scrolling to the page being "
+              "spoken.</p>",
               "<ul><li>Tools ▸ <b>Read Aloud</b> opens a playback bar and starts from the page you're "
               "on.</li>"
               "<li><b>Play/Pause</b> and <b>Stop</b> control playback; the <b>Speed</b> slider and "
               "<b>language</b> picker tune the voice. Esc or ✕ closes the bar.</li></ul>",
-              "<p>If reading does nothing, install <code>speech-dispatcher</code> (and a synthesizer "
-              "such as espeak-ng). Scanned pages with no text layer have nothing to read - run OCR "
+              "<p>If reading does nothing, add a voice under Windows Settings ▸ Time &amp; language "
+              "▸ Speech. Scanned pages with no text layer have nothing to read - run OCR "
               "first.</p>"),
          sect("id", "<p>Dengarkan dokumen dibacakan, satu kalimat sekali.</p>",
               "<p>Dengarkan PDF alih-alih membacanya - berguna untuk mengoreksi atau aksesibilitas, "
               "dan sepenuhnya lokal.</p>",
               "<p>Feather mengambil teks halaman dengan Poppler, memecahnya jadi kalimat, dan "
-              "membacakannya lewat <b>speech-dispatcher</b> (<code>spd-say</code> milik sistem). Tak "
-              "ada yang keluar dari mesinmu - mesin yang sama dipakai pembaca layar. Tampilan ikut "
-              "menggulir ke halaman yang sedang dibaca.</p>",
+              "membacakannya lewat <b>suara Windows</b> (SAPI - mesin yang sama dipakai Narrator). "
+              "Tak ada yang keluar dari mesinmu. Tampilan ikut menggulir ke halaman yang sedang "
+              "dibaca.</p>",
               "<ul><li>Tools ▸ <b>Read Aloud</b> membuka bar pemutaran dan mulai dari halaman yang "
               "kamu lihat.</li>"
               "<li><b>Play/Pause</b> dan <b>Stop</b> mengontrol pemutaran; slider <b>Speed</b> dan "
               "pemilih <b>bahasa</b> menyetel suara. Esc atau ✕ menutup bar.</li></ul>",
-              "<p>Jika tak ada suara, pasang <code>speech-dispatcher</code> (dan synthesizer seperti "
-              "espeak-ng). Halaman hasil pindai tanpa lapisan teks tak punya yang dibaca - jalankan "
+              "<p>Jika tak ada suara, tambahkan suara di Windows Settings ▸ Time &amp; language ▸ "
+              "Speech. Halaman hasil pindai tanpa lapisan teks tak punya yang dibaca - jalankan "
               "OCR dulu.</p>")});
     editing.topics.append(
         {"combine", "Combine", "Combine",
@@ -426,29 +426,27 @@ QList<Group> buildDocs() {
          sect("en", "<p>Scan paper straight into a PDF from a connected device.</p>",
               "<p>Capture one or more pages from a scanner and, optionally, make them searchable "
               "with OCR in the same step.</p>",
-              "<p>Scanning uses SANE's <code>scanimage</code> - the standard Linux scanning stack, so "
-              "any SANE-supported device works. Pages are captured as images, assembled into a PDF "
-              "(QPdfWriter), and a Tesseract text layer is added when you ask for one. Everything "
-              "stays on your machine.</p>",
+              "<p>Pages are captured as images, assembled into a PDF (QPdfWriter), and a Tesseract "
+              "text layer is added when you ask for one. Everything stays on your machine.</p>",
               "<ul><li><b>Tools ▸ Scan</b>. Pick the device (Refresh re-scans the bus), set "
               "resolution, colour mode, and page count, then Scan.</li>"
               "<li>Tick <b>Make it searchable with OCR</b> to add a text layer; choose the "
               "language.</li></ul>",
-              "<p>Needs the <code>sane-backends</code> package (and a configured scanner). More than "
-              "one page needs a document feeder. OCR needs Tesseract installed.</p>"),
+              "<p><b>Windows scanner support (WIA) is still on the roadmap</b> - this tool is not "
+              "available yet in this version. In the meantime, scan with your scanner's own app "
+              "and use <b>Create PDF</b> on the images. OCR needs Tesseract installed.</p>"),
          sect("id", "<p>Pindai kertas langsung jadi PDF dari perangkat terhubung.</p>",
               "<p>Tangkap satu atau beberapa halaman dari pemindai dan, jika mau, jadikan bisa dicari "
               "dengan OCR dalam satu langkah.</p>",
-              "<p>Pemindaian memakai <code>scanimage</code> dari SANE - tumpukan pindai standar Linux, "
-              "jadi perangkat apa pun yang didukung SANE bisa dipakai. Halaman ditangkap sebagai "
-              "gambar, dirakit jadi PDF (QPdfWriter), dan lapisan teks Tesseract ditambahkan bila "
-              "diminta. Semua tetap di mesinmu.</p>",
+              "<p>Halaman ditangkap sebagai gambar, dirakit jadi PDF (QPdfWriter), dan lapisan teks "
+              "Tesseract ditambahkan bila diminta. Semua tetap di mesinmu.</p>",
               "<ul><li><b>Tools ▸ Scan</b>. Pilih perangkat (Refresh memindai ulang bus), atur "
               "resolusi, mode warna, dan jumlah halaman, lalu Scan.</li>"
               "<li>Centang <b>Make it searchable with OCR</b> untuk menambah lapisan teks; pilih "
               "bahasanya.</li></ul>",
-              "<p>Butuh paket <code>sane-backends</code> (dan pemindai terkonfigurasi). Lebih dari "
-              "satu halaman butuh pengumpan dokumen. OCR butuh Tesseract terpasang.</p>")});
+              "<p><b>Dukungan pemindai Windows (WIA) masih di roadmap</b> - alat ini belum tersedia "
+              "di versi ini. Sementara itu, pindai dengan aplikasi bawaan pemindaimu lalu pakai "
+              "<b>Create PDF</b> pada gambarnya. OCR butuh Tesseract terpasang.</p>")});
     editing.topics.append(
         {"export", "Export to editable", "Ekspor ke dokumen",
          sect("en", "<p>Turn a PDF back into an editable document.</p>",
@@ -976,7 +974,7 @@ QList<Group> buildDocs() {
               "existing signatures, and optionally add a trusted timestamp.</p>",
               "<p>Prove a document is authentic and unchanged, show a real signature graphic, and "
               "pin when it was signed.</p>",
-              "<p>Signing uses a certificate from your system's NSS database via Poppler. The "
+              "<p>Signing uses a certificate from Feather's NSS database via Poppler. The "
               "appearance can be the default text block or a PNG/JPEG of your signature drawn behind "
               "it. A trusted timestamp is fetched separately over RFC 3161 (openssl builds the "
               "request, curl posts it to a Time Stamp Authority) and saved as a detached "
@@ -987,7 +985,8 @@ QList<Group> buildDocs() {
               "graphical signature. Tick <b>Add a trusted timestamp (RFC 3161)</b> and set the TSA "
               "URL to also write a <code>.tsr</code> token.</li>"
               "<li><b>Document ▸ Signatures</b>: review signers and validity.</li></ul>",
-              "<p>Signing needs a certificate in your NSS store (<code>~/.pki/nssdb</code>); if none "
+              "<p>Signing needs a certificate in Feather's NSS store (under the app's data "
+              "folder); if none "
               "exist the app says so - import a PKCS#12 certificate first. Timestamping needs "
               "<code>openssl</code> and <code>curl</code> and a reachable TSA; if it can't reach one "
               "the signature is still saved and you're told the timestamp failed. The <code>.tsr</code> "
@@ -998,7 +997,7 @@ QList<Group> buildDocs() {
               "tepercaya.</p>",
               "<p>Buktikan dokumen asli dan tak berubah, tampilkan grafik tanda tangan sungguhan, dan "
               "kunci kapan ditandatangani.</p>",
-              "<p>Penandatanganan memakai sertifikat dari NSS database sistemmu via Poppler. "
+              "<p>Penandatanganan memakai sertifikat dari NSS database milik Feather via Poppler. "
               "Tampilannya bisa blok teks default atau PNG/JPEG tanda tanganmu yang digambar di "
               "belakangnya. Stempel waktu tepercaya diambil terpisah lewat RFC 3161 (openssl membangun "
               "permintaan, curl mengirimnya ke Time Stamp Authority) dan disimpan sebagai sidecar "
@@ -1009,7 +1008,8 @@ QList<Group> buildDocs() {
               "tangan grafis. Centang <b>Add a trusted timestamp (RFC 3161)</b> dan setel URL TSA "
               "untuk sekaligus menulis token <code>.tsr</code>.</li>"
               "<li><b>Document ▸ Signatures</b>: tinjau penandatangan dan keabsahan.</li></ul>",
-              "<p>Penandatanganan butuh sertifikat di NSS store (<code>~/.pki/nssdb</code>); jika tak "
+              "<p>Penandatanganan butuh sertifikat di NSS store milik Feather (di folder data "
+              "aplikasi); jika tak "
               "ada, aplikasi memberi tahu - impor sertifikat PKCS#12 dulu. Stempel waktu butuh "
               "<code>openssl</code> dan <code>curl</code> serta TSA yang terjangkau; bila tak "
               "terjangkau, tanda tangan tetap tersimpan dan kamu diberi tahu stempel waktu gagal. "

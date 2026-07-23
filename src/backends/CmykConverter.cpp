@@ -16,16 +16,14 @@
 
 #include "backends/CmykConverter.h"
 
+#include "backends/ToolLocator.h"
+
 #include <QFile>
 #include <QProcess>
-#include <QStandardPaths>
 
 namespace {
 QString ghostscript() {
-    QString gs = QStandardPaths::findExecutable(QStringLiteral("gs"));
-    if (gs.isEmpty())
-        gs = QStandardPaths::findExecutable(QStringLiteral("ghostscript"));
-    return gs;
+    return ToolLocator::ghostscript();
 }
 } // namespace
 
