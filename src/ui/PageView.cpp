@@ -724,7 +724,14 @@ QSize PageView::pixelSize(int page) const {
 }
 
 void PageView::request(int slot) {
-    if (!m_doc || m_pending.contains(slot) || m_cache.contains(slot))
+    if (!m_doc || m_pending.contains(slot))
+        return;
+    // A cached pixmap only satisfies the request when it was rendered at the
+    // current zoom and device pixel ratio. Anything else is a stale preview
+    // (kept across zoom changes so the view never flashes white) that still
+    // needs its crisp replacement.
+    if (auto it = m_cache.constFind(slot);
+        it != m_cache.constEnd() && it->size() == pixelSize(slot))
         return;
     const int orig = originalOf(slot);
     if (orig < 0)
@@ -814,9 +821,10 @@ void PageView::paintEvent(QPaintEvent*) {
             p.drawPixmap(r, *it);
             m_lru.removeAll(slot);
             m_lru.append(slot);
-        } else {
-            request(slot);
         }
+        // No-op when the cached pixmap already matches the current zoom/DPR;
+        // otherwise (missing, or a stale-zoom preview) queue a crisp render.
+        request(slot);
         const QList<QPdfLink> results = m_search->resultsOnPage(page);
         if (!results.isEmpty()) {
             QColor hi = pal.accent;
