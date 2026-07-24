@@ -6,7 +6,7 @@
 # installs the result into <repo>/deps/poppler — which CMakePresets.json puts
 # on CMAKE_PREFIX_PATH.
 #
-# Prerequisites: Visual Studio 2022 (C++ workload), CMake, git,
+# Prerequisites: Visual Studio 2022 or newer (C++ workload), CMake, git,
 #   Qt 6.x MSVC kit, vcpkg at C:\vcpkg with the deps below installed:
 #     vcpkg install freetype libjpeg-turbo openjpeg libpng tiff lcms zlib --triplet x64-windows
 #
@@ -42,7 +42,9 @@ if (-not (Test-Path $src)) {
 # backend means no fontconfig dependency. NSS/GPGME signature backends are off
 # for now (Feather's signing roadmap moves to Windows CNG); the Qt API still
 # compiles and reports signatures as unverifiable.
-cmake -S $src -B $build -G "Visual Studio 17 2022" -A x64 `
+# No explicit generator: CMake picks the newest Visual Studio it finds, so the
+# same script works on VS 2022 locally and VS 2026 on the CI runners.
+cmake -S $src -B $build `
     "-DCMAKE_TOOLCHAIN_FILE=$VcpkgRoot/scripts/buildsystems/vcpkg.cmake" `
     "-DVCPKG_TARGET_TRIPLET=x64-windows" `
     "-DCMAKE_PREFIX_PATH=$QtDir" `

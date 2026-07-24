@@ -41,9 +41,11 @@ jobs:
         if: steps.poppler-cache.outputs.cache-hit != 'true'
         run: .\scripts\build-poppler.ps1 -QtDir $env:QT_ROOT_DIR -VcpkgRoot $env:VCPKG_INSTALLATION_ROOT
 
+      # No explicit -G: the runner image tracks the current Visual Studio
+      # (VS 2026 as of windows-2025-vs2026), so let CMake pick the newest one.
       - name: Configure
         run: >
-          cmake -B build -G "Visual Studio 17 2022" -A x64
+          cmake -B build
           -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR;$env:GITHUB_WORKSPACE/deps/poppler;$env:VCPKG_INSTALLED"
 
       - name: Build
@@ -51,6 +53,11 @@ jobs:
 
       - name: Verify the binary was produced
         run: if (-not (Test-Path build\RelWithDebInfo\feather-pdf.exe)) { exit 1 }
+
+      - name: Put runtime DLLs on PATH for the tests
+        run: |
+          echo "$env:VCPKG_INSTALLED\bin" >> $env:GITHUB_PATH
+          echo "$env:GITHUB_WORKSPACE\deps\poppler\bin" >> $env:GITHUB_PATH
 
       - name: Run tests
         run: ctest --test-dir build -C RelWithDebInfo --output-on-failure

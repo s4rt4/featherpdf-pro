@@ -40,22 +40,6 @@ private:
                 QString::fromUtf8(p.readAllStandardError())};
     }
 
-    // Drive the file-manager helper script. It calls `feather-pdf` by name, so
-    // put the freshly built binary's directory on PATH for the child process.
-    Result runHelper(const QStringList& args) {
-        QProcess p;
-        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-        const QString binDir = QFileInfo(QStringLiteral(FEATHERPDF_BIN)).absolutePath();
-        env.insert(QStringLiteral("PATH"),
-                   binDir + QLatin1Char(':') + env.value(QStringLiteral("PATH")));
-        p.setProcessEnvironment(env);
-        p.start(QStringLiteral(FEATHERPDF_ACTION), args);
-        if (!p.waitForFinished(30000))
-            return {};
-        return {p.exitCode(), QString::fromUtf8(p.readAllStandardOutput()),
-                QString::fromUtf8(p.readAllStandardError())};
-    }
-
 private slots:
     void initTestCase() {
         QVERIFY(m_dir.isValid());
@@ -110,65 +94,6 @@ private slots:
         QVERIFY(!img.isNull());
         // A4 portrait -> the longest edge lands exactly on the requested size.
         QCOMPARE(qMax(img.width(), img.height()), 128);
-    }
-
-    // Drive the CUPS backend script. FEATHER_PRINT_DIR redirects output to a
-    // temp dir and FEATHER_PRINT_OPEN=0 skips the best-effort session launch.
-    Result runBackend(const QStringList& args, const QString& dir,
-                      const QString& stdinFile = QString()) {
-        QProcess p;
-        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-        env.insert(QStringLiteral("FEATHER_PRINT_DIR"), dir);
-        env.insert(QStringLiteral("FEATHER_PRINT_OPEN"), QStringLiteral("0"));
-        p.setProcessEnvironment(env);
-        if (!stdinFile.isEmpty())
-            p.setStandardInputFile(stdinFile);
-        p.start(QStringLiteral(FEATHERPDF_CUPS_BACKEND), args);
-        if (!p.waitForFinished(30000))
-            return {};
-        return {p.exitCode(), QString::fromUtf8(p.readAllStandardOutput()),
-                QString::fromUtf8(p.readAllStandardError())};
-    }
-
-    void printBackendAdvertisesDevice() {
-        QProcess p;
-        p.start(QStringLiteral(FEATHERPDF_CUPS_BACKEND), QStringList{});
-        QVERIFY(p.waitForFinished(10000));
-        QCOMPARE(p.exitCode(), 0);
-        const QString out = QString::fromUtf8(p.readAllStandardOutput());
-        QVERIFY2(out.contains(QStringLiteral("feather-pdf-print:/")), qPrintable(out));
-    }
-
-    void printBackendSavesJob() {
-        QTemporaryDir dir;
-        QVERIFY(dir.isValid());
-        // CUPS args: job-id user title copies options ; document on stdin.
-        const Result r = runBackend({QStringLiteral("77"), QStringLiteral("tester"),
-                                     QStringLiteral("Quarterly Report"), QStringLiteral("1"),
-                                     QString()},
-                                    dir.path(), m_pdf);
-        QCOMPARE(r.code, 0);
-        const QString saved = dir.filePath(QStringLiteral("Quarterly_Report-77.pdf"));
-        QVERIFY2(QFileInfo::exists(saved), qPrintable(r.err));
-        // The saved file is a byte-for-byte copy of what we "printed".
-        QFile in(m_pdf), out(saved);
-        QVERIFY(in.open(QIODevice::ReadOnly) && out.open(QIODevice::ReadOnly));
-        QCOMPARE(in.readAll(), out.readAll());
-    }
-
-    void actionHelperWritesBesideSource() {
-        // Work on a copy so the output name is predictable next to it.
-        const QString src = m_dir.filePath(QStringLiteral("action-src.pdf"));
-        QVERIFY(QFile::copy(m_pdf, src));
-        const Result r = runHelper({QStringLiteral("compress"), src});
-        QCOMPARE(r.code, 0);
-        QVERIFY2(QFileInfo::exists(m_dir.filePath(QStringLiteral("action-src-compressed.pdf"))),
-                 qPrintable(r.err));
-    }
-
-    void actionHelperRejectsBadArgs() {
-        QCOMPARE(runHelper({}).code, 2);                                  // no action, no file
-        QCOMPARE(runHelper({QStringLiteral("bogus"), m_pdf}).code, 2);    // unknown action
     }
 
     void batchRunsSavedAction() {

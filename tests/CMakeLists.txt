@@ -1,6 +1,15 @@
 # Feather PDF — tests.
 # Copyright (C) 2026 Feather PDF contributors. Licensed under GPLv3 (see LICENSE).
 
+# Tests run headless under the offscreen platform plugin. On Windows that
+# plugin uses Qt's freetype font database instead of GDI, which starts empty —
+# QPdfWriter would then emit PDFs with no text and every extraction-based test
+# fails. Point it at the system font directory.
+set(FEATHER_TEST_ENV "QT_QPA_PLATFORM=offscreen")
+if(WIN32)
+    list(APPEND FEATHER_TEST_ENV "QT_QPA_FONTDIR=$ENV{SystemRoot}/Fonts")
+endif()
+
 qt_add_executable(test_pdfeditor
     test_pdfeditor.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/PdfEditor.cpp
@@ -19,7 +28,7 @@ target_link_libraries(test_pdfeditor PRIVATE
 )
 
 add_test(NAME pdfeditor COMMAND test_pdfeditor)
-set_tests_properties(pdfeditor PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(pdfeditor PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_formeditor
     test_formeditor.cpp
@@ -34,7 +43,7 @@ target_link_libraries(test_formeditor PRIVATE
     feather::qpdf
 )
 add_test(NAME formeditor COMMAND test_formeditor)
-set_tests_properties(formeditor PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(formeditor PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_formdetector
     test_formdetector.cpp
@@ -49,7 +58,7 @@ target_link_libraries(test_formdetector PRIVATE
     feather::poppler-qt6
 )
 add_test(NAME formdetector COMMAND test_formdetector)
-set_tests_properties(formdetector PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(formdetector PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_readaloud
     test_readaloud.cpp
@@ -64,7 +73,7 @@ target_link_libraries(test_readaloud PRIVATE
     feather::poppler-qt6
 )
 add_test(NAME readaloud COMMAND test_readaloud)
-set_tests_properties(readaloud PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(readaloud PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_scanner
     test_scanner.cpp
@@ -77,7 +86,7 @@ target_link_libraries(test_scanner PRIVATE
     Qt6::Test
 )
 add_test(NAME scanner COMMAND test_scanner)
-set_tests_properties(scanner PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(scanner PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_annotator
     test_annotator.cpp
@@ -92,7 +101,7 @@ target_link_libraries(test_annotator PRIVATE
     feather::qpdf
 )
 add_test(NAME annotator COMMAND test_annotator)
-set_tests_properties(annotator PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(annotator PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_formroundtrip
     test_formroundtrip.cpp
@@ -110,7 +119,7 @@ target_link_libraries(test_formroundtrip PRIVATE
     feather::poppler-qt6
 )
 add_test(NAME formroundtrip COMMAND test_formroundtrip)
-set_tests_properties(formroundtrip PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(formroundtrip PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_texteditor
     test_texteditor.cpp
@@ -127,7 +136,7 @@ target_link_libraries(test_texteditor PRIVATE
     feather::qpdf
 )
 add_test(NAME texteditor COMMAND test_texteditor)
-set_tests_properties(texteditor PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(texteditor PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_xfdf
     test_xfdf.cpp
@@ -147,7 +156,7 @@ target_link_libraries(test_xfdf PRIVATE
     feather::poppler-qt6
 )
 add_test(NAME xfdf COMMAND test_xfdf)
-set_tests_properties(xfdf PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(xfdf PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_document
     test_document.cpp
@@ -157,7 +166,7 @@ qt_add_executable(test_document
 target_include_directories(test_document PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(test_document PRIVATE Qt6::Core Qt6::Gui Qt6::Pdf Qt6::Test)
 add_test(NAME document COMMAND test_document)
-set_tests_properties(document PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(document PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_converter
     test_converter.cpp
@@ -173,7 +182,7 @@ target_link_libraries(test_converter PRIVATE
     feather::poppler-qt6
 )
 add_test(NAME converter COMMAND test_converter)
-set_tests_properties(converter PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(converter PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_imageexporter
     test_imageexporter.cpp
@@ -189,7 +198,7 @@ target_link_libraries(test_imageexporter PRIVATE
     Qt6::Test
 )
 add_test(NAME imageexporter COMMAND test_imageexporter)
-set_tests_properties(imageexporter PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(imageexporter PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_snapshotexporter
     test_snapshotexporter.cpp
@@ -204,7 +213,7 @@ target_link_libraries(test_snapshotexporter PRIVATE
     Qt6::Test
 )
 add_test(NAME snapshotexporter COMMAND test_snapshotexporter)
-set_tests_properties(snapshotexporter PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(snapshotexporter PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_patternredactor
     test_patternredactor.cpp
@@ -219,7 +228,7 @@ target_link_libraries(test_patternredactor PRIVATE
     feather::poppler-qt6
 )
 add_test(NAME patternredactor COMMAND test_patternredactor)
-set_tests_properties(patternredactor PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(patternredactor PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_sanitizer
     test_sanitizer.cpp
@@ -234,7 +243,7 @@ target_link_libraries(test_sanitizer PRIVATE
     feather::qpdf
 )
 add_test(NAME sanitizer COMMAND test_sanitizer)
-set_tests_properties(sanitizer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(sanitizer PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_pdfa
     test_pdfa.cpp
@@ -250,7 +259,7 @@ target_link_libraries(test_pdfa PRIVATE
     feather::qpdf
 )
 add_test(NAME pdfa COMMAND test_pdfa)
-set_tests_properties(pdfa PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(pdfa PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_optimizer
     test_optimizer.cpp
@@ -265,7 +274,7 @@ target_link_libraries(test_optimizer PRIVATE
     feather::qpdf
 )
 add_test(NAME optimizer COMMAND test_optimizer)
-set_tests_properties(optimizer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(optimizer PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_linkeditor
     test_linkeditor.cpp
@@ -280,7 +289,7 @@ target_link_libraries(test_linkeditor PRIVATE
     feather::qpdf
 )
 add_test(NAME linkeditor COMMAND test_linkeditor)
-set_tests_properties(linkeditor PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(linkeditor PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_headerfooter
     test_headerfooter.cpp
@@ -296,7 +305,7 @@ target_link_libraries(test_headerfooter PRIVATE
     feather::poppler-qt6
 )
 add_test(NAME headerfooter COMMAND test_headerfooter)
-set_tests_properties(headerfooter PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(headerfooter PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_textcomparer
     test_textcomparer.cpp
@@ -311,7 +320,7 @@ target_link_libraries(test_textcomparer PRIVATE
     feather::poppler-qt6
 )
 add_test(NAME textcomparer COMMAND test_textcomparer)
-set_tests_properties(textcomparer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(textcomparer PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_measurer
     test_measurer.cpp
@@ -325,7 +334,7 @@ target_link_libraries(test_measurer PRIVATE
     Qt6::Test
 )
 add_test(NAME measurer COMMAND test_measurer)
-set_tests_properties(measurer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(measurer PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_stamplibrary
     test_stamplibrary.cpp
@@ -340,7 +349,7 @@ target_link_libraries(test_stamplibrary PRIVATE
     feather::qpdf
 )
 add_test(NAME stamplibrary COMMAND test_stamplibrary)
-set_tests_properties(stamplibrary PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(stamplibrary PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_ocrpreprocess
     test_ocrpreprocess.cpp
@@ -354,7 +363,7 @@ target_link_libraries(test_ocrpreprocess PRIVATE
     Qt6::Test
 )
 add_test(NAME ocrpreprocess COMMAND test_ocrpreprocess)
-set_tests_properties(ocrpreprocess PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(ocrpreprocess PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_signer
     test_signer.cpp
@@ -374,7 +383,7 @@ target_link_libraries(test_signer PRIVATE
     feather::qpdf
 )
 add_test(NAME signer COMMAND test_signer)
-set_tests_properties(signer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(signer PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_batchrunner
     test_batchrunner.cpp
@@ -401,17 +410,15 @@ target_link_libraries(test_batchrunner PRIVATE
     feather::poppler-qt6
 )
 add_test(NAME batchrunner COMMAND test_batchrunner)
-set_tests_properties(batchrunner PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(batchrunner PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_cli test_cli.cpp)
 target_include_directories(test_cli PRIVATE ${CMAKE_SOURCE_DIR}/src)
-target_compile_definitions(test_cli PRIVATE FEATHERPDF_BIN="$<TARGET_FILE:feather-pdf>"
-    FEATHERPDF_ACTION="${CMAKE_SOURCE_DIR}/packaging/feather-pdf-action"
-    FEATHERPDF_CUPS_BACKEND="${CMAKE_SOURCE_DIR}/packaging/cups/feather-pdf-print")
+target_compile_definitions(test_cli PRIVATE FEATHERPDF_BIN="$<TARGET_FILE:feather-pdf>")
 target_link_libraries(test_cli PRIVATE Qt6::Core Qt6::Gui Qt6::Test)
 add_dependencies(test_cli feather-pdf)
 add_test(NAME cli COMMAND test_cli)
-set_tests_properties(cli PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(cli PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
 qt_add_executable(test_translations test_translations.cpp)
 target_include_directories(test_translations PRIVATE ${CMAKE_SOURCE_DIR}/src)
