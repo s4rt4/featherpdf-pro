@@ -38,7 +38,7 @@ public:
     // ── Hardware tokens (PKCS#11) ───────────────────────────────────────────
     // True if the NSS tooling (modutil) for managing security devices is present.
     static bool hasSecurityDeviceTools();
-    // Register a PKCS#11 module (e.g. /usr/lib64/opensc-pkcs11.so for smartcards
+    // Register a PKCS#11 module (e.g. OpenSC's opensc-pkcs11.dll for smartcards
     // and YubiKeys) under `name` in the NSS database, so certificates on an
     // inserted token show up in availableCertificates(). The token PIN is then
     // entered as the certificate password when signing. Returns false + *error.

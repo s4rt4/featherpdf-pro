@@ -27,6 +27,7 @@
 #include <QLineEdit>
 #include <QListWidget>
 #include <QPushButton>
+#include <QStandardPaths>
 #include <QVBoxLayout>
 
 SecurityDevicesDialog::SecurityDevicesDialog(QWidget* parent) : QDialog(parent) {
@@ -61,7 +62,7 @@ SecurityDevicesDialog::SecurityDevicesDialog(QWidget* parent) : QDialog(parent) 
 
     auto* hint = new QLabel(
         tr("Register a PKCS#11 module for a smartcard or USB token (e.g. "
-           "/usr/lib64/opensc-pkcs11.so). Certificates on the inserted token then appear in the "
+           "opensc-pkcs11.dll from OpenSC). Certificates on the inserted token then appear in the "
            "Sign dialog; enter the token PIN as the certificate password."),
         this);
     hint->setObjectName(QStringLiteral("Hint"));
@@ -84,7 +85,7 @@ SecurityDevicesDialog::SecurityDevicesDialog(QWidget* parent) : QDialog(parent) 
     m_name = new QLineEdit(this);
     m_name->setPlaceholderText(tr("Name, e.g. YubiKey"));
     m_module = new QLineEdit(this);
-    m_module->setPlaceholderText(tr("PKCS#11 module (.so)"));
+    m_module->setPlaceholderText(tr("PKCS#11 module (.dll)"));
     auto* browse = new QPushButton(tr("Browse…"), this);
     browse->setObjectName(QStringLiteral("Browse"));
     browse->setCursor(Qt::PointingHandCursor);
@@ -110,8 +111,9 @@ SecurityDevicesDialog::SecurityDevicesDialog(QWidget* parent) : QDialog(parent) 
 
     connect(browse, &QPushButton::clicked, this, [this] {
         const QString path = QFileDialog::getOpenFileName(
-            this, tr("Select PKCS#11 module"), QStringLiteral("/usr/lib64"),
-            tr("Shared libraries (*.so *.so.*)"));
+            this, tr("Select PKCS#11 module"),
+            QStandardPaths::writableLocation(QStandardPaths::HomeLocation),
+            tr("PKCS#11 modules (*.dll)"));
         if (!path.isEmpty())
             m_module->setText(path);
     });

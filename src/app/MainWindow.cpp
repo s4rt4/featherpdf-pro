@@ -3582,7 +3582,7 @@ void MainWindow::showAbout() {
     v->addSpacing(4);
 
     auto* desc = new QLabel(
-        tr("A native, open-source PDF tool for Linux, licensed under the GPLv3."), &dlg);
+        tr("A native, open-source PDF tool for Windows, licensed under the GPLv3."), &dlg);
     desc->setWordWrap(true);
     desc->setAlignment(Qt::AlignHCenter);
     desc->setFixedWidth(300);
@@ -3596,7 +3596,7 @@ void MainWindow::showAbout() {
     const QString a = QStringLiteral("color:%1; text-decoration:none; font-weight:600;")
                           .arg(pal.accent.name());
     links->setText(
-        tr("<a style='%1' href='https://github.com/s4rt4/featherpdf-linux'>GitHub</a>"
+        tr("<a style='%1' href='https://github.com/s4rt4/featherpdf-pro'>GitHub</a>"
            "&nbsp;&nbsp;·&nbsp;&nbsp;"
            "<a style='%1' href='https://www.gnu.org/licenses/gpl-3.0.html'>License</a>")
             .arg(a));

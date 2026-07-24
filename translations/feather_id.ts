@@ -3004,12 +3004,12 @@
     </message>
     <message>
         <location filename="../src/app/MainWindow.cpp" line="3585"/>
-        <source>A native, open-source PDF tool for Linux, licensed under the GPLv3.</source>
-        <translation>Alat PDF native sumber-terbuka untuk Linux, berlisensi GPLv3.</translation>
+        <source>A native, open-source PDF tool for Windows, licensed under the GPLv3.</source>
+        <translation>Alat PDF native dan open-source untuk Windows, berlisensi GPLv3.</translation>
     </message>
     <message>
         <location filename="../src/app/MainWindow.cpp" line="3599"/>
-        <source>&lt;a style=&apos;%1&apos; href=&apos;https://github.com/s4rt4/featherpdf-linux&apos;&gt;GitHub&lt;/a&gt;&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp;&lt;a style=&apos;%1&apos; href=&apos;https://www.gnu.org/licenses/gpl-3.0.html&apos;&gt;License&lt;/a&gt;</source>
+        <source>&lt;a style=&apos;%1&apos; href=&apos;https://github.com/s4rt4/featherpdf-pro&apos;&gt;GitHub&lt;/a&gt;&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp;&lt;a style=&apos;%1&apos; href=&apos;https://www.gnu.org/licenses/gpl-3.0.html&apos;&gt;License&lt;/a&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4518,8 +4518,8 @@ Hasil: %3
     </message>
     <message>
         <location filename="../src/ui/ScanDialog.cpp" line="68"/>
-        <source>Scan from a connected device into a new PDF. Pages are captured with SANE; you can add a searchable text layer with OCR.</source>
-        <translation>Pindai dari perangkat terhubung jadi PDF baru. Halaman ditangkap dengan SANE; kamu bisa menambah lapisan teks yang bisa dicari lewat OCR.</translation>
+        <source>Scan from a connected device into a new PDF. You can add a searchable text layer with OCR.</source>
+        <translation>Pindai dari perangkat terhubung menjadi PDF baru. Kamu bisa menambahkan lapisan teks yang bisa dicari lewat OCR.</translation>
     </message>
     <message>
         <location filename="../src/ui/ScanDialog.cpp" line="84"/>
@@ -4595,77 +4595,77 @@ Hasil: %3
 <context>
     <name>SecurityDevicesDialog</name>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="33"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="34"/>
         <source>Security Devices</source>
         <translation>Perangkat Keamanan</translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="63"/>
-        <source>Register a PKCS#11 module for a smartcard or USB token (e.g. /usr/lib64/opensc-pkcs11.so). Certificates on the inserted token then appear in the Sign dialog; enter the token PIN as the certificate password.</source>
-        <translation>Daftarkan modul PKCS#11 untuk smartcard atau token USB (mis. /usr/lib64/opensc-pkcs11.so). Sertifikat pada token yang terpasang lalu muncul di dialog Tanda Tangan; masukkan PIN token sebagai kata sandi sertifikat.</translation>
-    </message>
-    <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="75"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="76"/>
         <source>Remove selected</source>
         <translation>Hapus yang dipilih</translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="85"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="86"/>
         <source>Name, e.g. YubiKey</source>
         <translation>Nama, mis. YubiKey</translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="87"/>
-        <source>PKCS#11 module (.so)</source>
-        <translation>Modul PKCS#11 (.so)</translation>
-    </message>
-    <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="88"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="89"/>
         <source>Browse…</source>
         <translation>Telusuri…</translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="91"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="92"/>
         <source>Add device</source>
         <translation>Tambah perangkat</translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="113"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="114"/>
         <source>Select PKCS#11 module</source>
         <translation>Pilih modul PKCS#11</translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="114"/>
-        <source>Shared libraries (*.so *.so.*)</source>
-        <translation>Pustaka bersama (*.so *.so.*)</translation>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="64"/>
+        <source>Register a PKCS#11 module for a smartcard or USB token (e.g. opensc-pkcs11.dll from OpenSC). Certificates on the inserted token then appear in the Sign dialog; enter the token PIN as the certificate password.</source>
+        <translation>Daftarkan modul PKCS#11 untuk smartcard atau token USB (mis. opensc-pkcs11.dll dari OpenSC). Sertifikat pada token yang terpasang lalu muncul di dialog Tanda Tangan; masukkan PIN token sebagai kata sandi sertifikat.</translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="127"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="88"/>
+        <source>PKCS#11 module (.dll)</source>
+        <translation>Modul PKCS#11 (.dll)</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="116"/>
+        <source>PKCS#11 modules (*.dll)</source>
+        <translation>Modul PKCS#11 (*.dll)</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="129"/>
         <source>Install nss-tools (modutil) to manage security devices.</source>
         <translation>Pasang nss-tools (modutil) untuk mengelola perangkat keamanan.</translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="136"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="138"/>
         <source>(no security devices registered)</source>
         <translation>(belum ada perangkat keamanan terdaftar)</translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="146"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="148"/>
         <source>Give the device a name and pick its module.</source>
         <translation>Beri nama perangkatnya dan pilih modulnya.</translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="156"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="158"/>
         <source>Added %1.</source>
         <translation>%1 ditambahkan.</translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="163"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="165"/>
         <source>Select a device to remove.</source>
         <translation>Pilih perangkat yang akan dihapus.</translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="172"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="174"/>
         <source>Removed %1.</source>
         <translation>%1 dihapus.</translation>
     </message>

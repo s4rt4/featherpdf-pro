@@ -65,7 +65,7 @@ ScanDialog::ScanDialog(QWidget* parent) : QDialog(parent) {
     root->setSpacing(10);
 
     auto* hint = new QLabel(
-        tr("Scan from a connected device into a new PDF. Pages are captured with SANE; you can add "
+        tr("Scan from a connected device into a new PDF. You can add "
            "a searchable text layer with OCR."),
         this);
     hint->setObjectName(QStringLiteral("Hint"));

@@ -60,7 +60,7 @@ QList<Group> buildDocs() {
     start.topics.append(
         {"overview", "Overview", "Ringkasan",
          sect("en",
-              "<p>Feather PDF is a native, full-featured PDF tool for Linux, light on the system, "
+              "<p>Feather PDF is a native, full-featured PDF tool for Windows, light on the system, "
               "powered by mature libraries (PDFium, Poppler, QPDF, Tesseract, LibreOffice).</p>",
               "<p>One app to read, organize, secure, annotate, fill, sign, recognize, and create "
               "PDFs without a web engine.</p>",
@@ -73,7 +73,7 @@ QList<Group> buildDocs() {
               "offline; OCR, conversion, and signing rely on external tools described in their "
               "sections.</p>"),
          sect("id",
-              "<p>Feather PDF adalah alat PDF native dan lengkap untuk Linux - ringan, ditenagai "
+              "<p>Feather PDF adalah alat PDF native dan lengkap untuk Windows - ringan, ditenagai "
               "pustaka matang (PDFium, Poppler, QPDF, Tesseract, LibreOffice).</p>",
               "<p>Satu aplikasi untuk membaca, menata, mengamankan, menganotasi, mengisi, "
               "menandatangani, mengenali teks, dan membuat PDF tanpa web engine.</p>",

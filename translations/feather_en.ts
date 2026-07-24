@@ -3024,12 +3024,12 @@
     </message>
     <message>
         <location filename="../src/app/MainWindow.cpp" line="3585"/>
-        <source>A native, open-source PDF tool for Linux, licensed under the GPLv3.</source>
+        <source>A native, open-source PDF tool for Windows, licensed under the GPLv3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/app/MainWindow.cpp" line="3599"/>
-        <source>&lt;a style=&apos;%1&apos; href=&apos;https://github.com/s4rt4/featherpdf-linux&apos;&gt;GitHub&lt;/a&gt;&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp;&lt;a style=&apos;%1&apos; href=&apos;https://www.gnu.org/licenses/gpl-3.0.html&apos;&gt;License&lt;/a&gt;</source>
+        <source>&lt;a style=&apos;%1&apos; href=&apos;https://github.com/s4rt4/featherpdf-pro&apos;&gt;GitHub&lt;/a&gt;&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp;&lt;a style=&apos;%1&apos; href=&apos;https://www.gnu.org/licenses/gpl-3.0.html&apos;&gt;License&lt;/a&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4527,7 +4527,7 @@ Result: %3
     </message>
     <message>
         <location filename="../src/ui/ScanDialog.cpp" line="68"/>
-        <source>Scan from a connected device into a new PDF. Pages are captured with SANE; you can add a searchable text layer with OCR.</source>
+        <source>Scan from a connected device into a new PDF. You can add a searchable text layer with OCR.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4604,77 +4604,77 @@ Result: %3
 <context>
     <name>SecurityDevicesDialog</name>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="33"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="34"/>
         <source>Security Devices</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="63"/>
-        <source>Register a PKCS#11 module for a smartcard or USB token (e.g. /usr/lib64/opensc-pkcs11.so). Certificates on the inserted token then appear in the Sign dialog; enter the token PIN as the certificate password.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="75"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="76"/>
         <source>Remove selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="85"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="86"/>
         <source>Name, e.g. YubiKey</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="87"/>
-        <source>PKCS#11 module (.so)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="88"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="89"/>
         <source>Browse…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="91"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="92"/>
         <source>Add device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="113"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="114"/>
         <source>Select PKCS#11 module</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="114"/>
-        <source>Shared libraries (*.so *.so.*)</source>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="64"/>
+        <source>Register a PKCS#11 module for a smartcard or USB token (e.g. opensc-pkcs11.dll from OpenSC). Certificates on the inserted token then appear in the Sign dialog; enter the token PIN as the certificate password.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="127"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="88"/>
+        <source>PKCS#11 module (.dll)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="116"/>
+        <source>PKCS#11 modules (*.dll)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="129"/>
         <source>Install nss-tools (modutil) to manage security devices.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="136"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="138"/>
         <source>(no security devices registered)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="146"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="148"/>
         <source>Give the device a name and pick its module.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="156"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="158"/>
         <source>Added %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="163"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="165"/>
         <source>Select a device to remove.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="172"/>
+        <location filename="../src/ui/SecurityDevicesDialog.cpp" line="174"/>
         <source>Removed %1.</source>
         <translation type="unfinished"></translation>
     </message>

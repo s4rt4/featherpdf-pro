@@ -100,7 +100,7 @@ private:
     void saveOutline(const QVector<PdfEditor::OutlineItem>& items); // write /Outlines, open result
     void addFormField(); // author a new AcroForm field: configure, then place
     void prepareForm();  // auto-detect fillable areas, review, then add them all
-    void readAloud();    // speak the document via speech-dispatcher (Read Aloud bar)
+    void readAloud();    // speak the document via QTextToSpeech/SAPI (Read Aloud bar)
     void placeFormField(int slot, const QRectF& normRect); // drawn rect → create/move field
     void moveFormField(const QString& name);   // start repositioning an existing field
     void deleteFormField(const QString& name); // remove an existing field
@@ -130,7 +130,7 @@ private:
     void setMeasureMode(bool on);   // enter/leave the click-to-measure mode
     void activateTool(const QString& id); // route a Tools entry (pane or menu) to its action
     void createPdf();         // make a PDF from images (native) or an office doc (LibreOffice)
-    void scanDocument();      // scan from a SANE device into a new PDF (optional OCR)
+    void scanDocument();      // scan into a new PDF (optional OCR); WIA backend on the roadmap
     void exportDocument();    // export the PDF to an editable office doc (LibreOffice)
     void exportPagesAsImages(); // render selected pages to PNG/JPEG/TIFF (QPdfDocument)
     void extractEmbeddedImages(); // pull the raster images embedded in the PDF (pdfimages)
