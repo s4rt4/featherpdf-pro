@@ -19,8 +19,13 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
+#include <QProcess>
 #include <QSettings>
 #include <QStandardPaths>
+
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 
 namespace {
 
@@ -146,18 +151,49 @@ QString verapdf() {
     return inProgramFiles(QStringLiteral("veraPDF/verapdf.bat"));
 }
 
+// True when `exe` actually runs and reports a version. A PATH hit is not
+// enough: server bundles (Laragon/XAMPP Apache) ship an openssl.exe whose
+// libssl often doesn't match, and such a copy dies on launch with a loader
+// error instead of working. main() sets SEM_FAILCRITICALERRORS, so a broken
+// candidate fails here with an exit code rather than a modal error box.
+bool opensslWorks(const QString& exe) {
+#ifdef Q_OS_WIN
+    // Suppress the loader's modal error box for the child while probing; set
+    // here too because test binaries don't go through the app's main().
+    const UINT oldMode = SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
+#endif
+    QProcess p;
+    p.start(exe, {QStringLiteral("version")});
+    bool ok = p.waitForFinished(5000);
+    if (!ok)
+        p.kill();
+    ok = ok && p.exitStatus() == QProcess::NormalExit && p.exitCode() == 0;
+#ifdef Q_OS_WIN
+    SetErrorMode(oldMode);
+#endif
+    return ok;
+}
+
 QString openssl() {
-    const QString onPath = QStandardPaths::findExecutable(QStringLiteral("openssl"));
-    if (!onPath.isEmpty())
-        return onPath;
-    // Git for Windows ships a full openssl most Windows dev machines already have.
-    for (const QString& sub : {QStringLiteral("Git/mingw64/bin/openssl.exe"),
-                               QStringLiteral("Git/usr/bin/openssl.exe")}) {
-        const QString hit = inProgramFiles(sub);
-        if (!hit.isEmpty())
-            return hit;
-    }
-    return QString();
+    // Probing spawns a process, so resolve once per run.
+    static const QString cached = [] {
+        QStringList candidates;
+        const QString onPath = QStandardPaths::findExecutable(QStringLiteral("openssl"));
+        if (!onPath.isEmpty())
+            candidates << onPath;
+        // Git for Windows ships a full openssl most Windows dev machines already have.
+        for (const QString& sub : {QStringLiteral("Git/mingw64/bin/openssl.exe"),
+                                   QStringLiteral("Git/usr/bin/openssl.exe")}) {
+            const QString hit = inProgramFiles(sub);
+            if (!hit.isEmpty())
+                candidates << hit;
+        }
+        for (const QString& candidate : candidates)
+            if (opensslWorks(candidate))
+                return candidate;
+        return QString();
+    }();
+    return cached;
 }
 
 QString nssTool(const QString& name) {

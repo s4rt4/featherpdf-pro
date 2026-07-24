@@ -47,6 +47,14 @@ void setAppIdentity() {
 } // namespace
 
 int main(int argc, char** argv) {
+#ifdef Q_OS_WIN
+    // Feather probes and runs external tools (openssl, tesseract, …). A broken
+    // install on PATH — e.g. a Laragon/XAMPP openssl.exe whose libssl doesn't
+    // match — must fail with an exit code the probe can reject, not a modal
+    // "Entry Point Not Found" box. Child processes inherit this error mode.
+    SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
+#endif
+
     // Headless command-line mode: when the first argument names a sub-command
     // (merge, split, …) or a help/version flag, run the CLI with no window. Use
     // the off-screen platform so it works over SSH and on machines with no
