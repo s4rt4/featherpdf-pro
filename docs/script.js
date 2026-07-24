@@ -103,7 +103,7 @@
     var typeLine = function () {
       var item = SCRIPT[idx % SCRIPT.length];
       var line = document.createElement('div');
-      line.innerHTML = '<span class="tprompt">$ </span><span class="tcmd"></span><span class="tcaret"></span>';
+      line.innerHTML = '<span class="tprompt">&gt; </span><span class="tcmd"></span><span class="tcaret"></span>';
       termBody.appendChild(line);
       trim();
       var cmdSpan = line.querySelector('.tcmd');

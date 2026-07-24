@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Feather PDF, light on the system, full-featured on PDF</title>
-<meta name="description" content="Feather PDF is an open-source, native PDF application for Linux with Adobe Acrobat-class capability and no web view. Read, organize, annotate, fill forms, sign, redact, OCR, and convert.">
-<meta property="og:title" content="Feather PDF">
-<meta property="og:description" content="Light on the system, full-featured on PDF. A native, open-source PDF app for Linux.">
+<title>Feather PDF Pro, light on the system, full-featured on PDF</title>
+<meta name="description" content="Feather PDF Pro is an open-source, native PDF application for Windows with Adobe Acrobat-class capability and no web view. Read, organize, annotate, fill forms, sign, redact, OCR, and convert.">
+<meta property="og:title" content="Feather PDF Pro">
+<meta property="og:description" content="Light on the system, full-featured on PDF. A native, open-source PDF app for Windows.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="hero.png">
 <link rel="icon" href="feather-logo.svg" type="image/svg+xml">
@@ -21,14 +21,14 @@
 <header class="nav">
   <a class="brand" href="#top">
     <img src="feather-logo.svg" alt="" width="30" height="30">
-    <span>Feather PDF</span>
+    <span>Feather PDF Pro</span>
   </a>
   <nav class="nav-links">
     <a href="#features">Features</a>
     <a href="#try">Try it</a>
     <a href="#signing">Signing</a>
     <a href="#built">How it's built</a>
-    <a class="ghost" href="https://github.com/s4rt4/featherpdf-linux"><i class="fa-brands fa-github"></i> GitHub</a>
+    <a class="ghost" href="https://github.com/s4rt4/featherpdf-pro"><i class="fa-brands fa-github"></i> GitHub</a>
   </nav>
 </header>
 
@@ -36,25 +36,24 @@
 
   <section class="hero">
     <img class="hero-logo" src="feather-logo.svg" alt="Feather PDF logo" width="104" height="104">
-    <h1>Feather PDF</h1>
+    <h1>Feather PDF Pro</h1>
     <p class="tagline">Light on the system, full-featured on PDF.</p>
     <p class="lede">
-      An open-source, native PDF application for Linux, aiming at Adobe Acrobat-class
+      An open-source, native PDF application for Windows, aiming at Adobe Acrobat-class
       capability <strong>without a web view</strong>. It wears Acrobat's bones (a tabbed
       workspace, a per-document command toolbar, a contextual Tools pane) with a quieter,
-      modern GNOME skin.
+      modern skin.
     </p>
     <div class="cta">
-      <a class="btn primary" href="https://github.com/s4rt4/featherpdf-linux/releases/download/v0.0.1/feather-pdf-0.0.1-1.x86_64.rpm"><i class="fa-solid fa-download"></i> Download .rpm (0.0.1)</a>
-      <a class="btn primary" href="https://github.com/s4rt4/featherpdf-linux/releases/download/v0.0.1/feather-pdf_0.0.1_amd64.deb"><i class="fa-solid fa-download"></i> Download .deb (0.0.1)</a>
-      <a class="btn" href="https://github.com/s4rt4/featherpdf-linux"><i class="fa-brands fa-github"></i> View on GitHub</a>
+      <a class="btn primary" href="https://github.com/s4rt4/featherpdf-pro/releases"><i class="fa-solid fa-download"></i> Download for Windows</a>
+      <a class="btn" href="https://github.com/s4rt4/featherpdf-pro"><i class="fa-brands fa-github"></i> View on GitHub</a>
     </div>
-    <p class="muted release-note">.rpm for Fedora, .deb for Debian / Ubuntu (x86_64). All versions on the
-      <a href="https://github.com/s4rt4/featherpdf-linux/releases">releases page</a>.</p>
+    <p class="muted release-note">Windows 10 / 11, x64. All versions on the
+      <a href="https://github.com/s4rt4/featherpdf-pro/releases">releases page</a>.</p>
     <div class="badges">
       <span class="badge"><i class="fa-solid fa-scale-balanced"></i> GPLv3</span>
       <span class="badge"><i class="fa-solid fa-code"></i> C++ / Qt 6</span>
-      <span class="badge"><i class="fa-brands fa-linux"></i> Linux native</span>
+      <span class="badge"><i class="fa-brands fa-windows"></i> Windows native</span>
       <span class="badge"><i class="fa-solid fa-ban"></i> No web view</span>
     </div>
   </section>
@@ -95,7 +94,7 @@
           <li>Tabbed workspace, thumbnails, live find</li>
           <li>Editable outline and document properties</li>
           <li>Immersive reading mode with a floating page pill</li>
-          <li>Follow-along read-aloud via speech-dispatcher</li>
+          <li>Follow-along read-aloud via Windows Speech (SAPI)</li>
         </ul></div>
       </article>
 
@@ -176,10 +175,10 @@
         </button>
         <p>From paper to searchable PDF in one pass.</p>
         <div class="card-more"><ul>
-          <li>Scan straight to PDF from any SANE device</li>
           <li>Tesseract OCR with automatic language detection</li>
           <li>Deskew, despeckle, and binarize pre-processing</li>
           <li>OCR and image-to-PDF also available headless</li>
+          <li>Scanning via Windows WIA is on the roadmap</li>
         </ul></div>
       </article>
 
@@ -206,8 +205,8 @@
         <div class="card-more"><ul>
           <li>A 21-command CLI, pipe-friendly</li>
           <li>Batch wizard: chain operations, save them as actions</li>
-          <li>Watch folders, systemd-friendly daemon</li>
-          <li>Thumbnails, right-click actions, and a virtual printer</li>
+          <li>Watch folders for drop-in processing</li>
+          <li>Headless thumbnails, OCR, and conversion</li>
         </ul></div>
       </article>
 
@@ -281,9 +280,8 @@
   <section class="closing reveal">
     <h2>Free software, no web view, nothing leaves your machine</h2>
     <div class="cta">
-      <a class="btn primary" href="https://github.com/s4rt4/featherpdf-linux/releases/download/v0.0.1/feather-pdf-0.0.1-1.x86_64.rpm"><i class="fa-solid fa-download"></i> Download .rpm (0.0.1)</a>
-      <a class="btn primary" href="https://github.com/s4rt4/featherpdf-linux/releases/download/v0.0.1/feather-pdf_0.0.1_amd64.deb"><i class="fa-solid fa-download"></i> Download .deb (0.0.1)</a>
-      <a class="btn" href="https://github.com/s4rt4/featherpdf-linux"><i class="fa-brands fa-github"></i> Get the source on GitHub</a>
+      <a class="btn primary" href="https://github.com/s4rt4/featherpdf-pro/releases"><i class="fa-solid fa-download"></i> Download for Windows</a>
+      <a class="btn" href="https://github.com/s4rt4/featherpdf-pro"><i class="fa-brands fa-github"></i> Get the source on GitHub</a>
     </div>
   </section>
 
@@ -291,9 +289,9 @@
 
 <footer class="footer">
   <p>
-    Feather PDF, licensed under the
+    Feather PDF Pro, licensed under the
     <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU GPLv3</a>.
-    Built for Linux.
+    Built for Windows.
   </p>
   <p class="muted">Not affiliated with Adobe. &ldquo;Acrobat&rdquo; is a trademark of its respective owner.</p>
 </footer>
