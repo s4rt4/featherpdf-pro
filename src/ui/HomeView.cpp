@@ -18,6 +18,9 @@
 
 #include "ui/Theme.h"
 
+#include <QCryptographicHash>
+#include <QDateTime>
+#include <QDir>
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QFileInfo>
@@ -29,16 +32,80 @@
 #include <QPainter>
 #include <QPalette>
 #include <QPainterPath>
+#include <QPdfDocument>
+#include <QPixmap>
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QScrollArea>
 #include <QSettings>
+#include <QStandardPaths>
 #include <QVBoxLayout>
 #include <algorithm>
 
 namespace {
 constexpr auto kRecentFilesKey = "recentFiles";
 constexpr int kMaxCards = 20;
+
+// Clip a pixmap to rounded corners (in device-independent pixels).
+QPixmap withRoundedCorners(const QPixmap& src, int radius) {
+    QPixmap out(src.size());
+    out.setDevicePixelRatio(src.devicePixelRatio());
+    out.fill(Qt::transparent);
+    QPainter p(&out);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    QPainterPath clip;
+    clip.addRoundedRect(QRectF(QPointF(0, 0), src.deviceIndependentSize()), radius, radius);
+    p.setClipPath(clip);
+    p.drawPixmap(0, 0, src);
+    return out;
+}
+
+// The first page of `path` rendered as a cover that fits `box` (logical px),
+// cached on disk keyed by path + mtime + size so the Home view stays instant
+// after the first visit. Null when the PDF can't be rendered (encrypted,
+// corrupted) — the tile then falls back to the icon chip.
+QPixmap coverPixmap(const QString& path, const QSize& box, qreal dpr) {
+    const QFileInfo fi(path);
+    const QString dir =
+        QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/covers";
+    QDir().mkpath(dir);
+    const QByteArray key =
+        QCryptographicHash::hash((path + '|' + QString::number(fi.lastModified().toSecsSinceEpoch())
+                                  + '|' + QString::number(qRound(box.width() * dpr)))
+                                     .toUtf8(),
+                                 QCryptographicHash::Sha1)
+            .toHex();
+    const QString cached = dir + '/' + key + ".png";
+
+    QPixmap pm;
+    if (pm.load(cached)) {
+        pm.setDevicePixelRatio(dpr);
+        return pm;
+    }
+
+    QPdfDocument doc;
+    if (doc.load(path) != QPdfDocument::Error::None || doc.pageCount() < 1)
+        return {};
+    const QSizeF pt = doc.pagePointSize(0);
+    if (pt.isEmpty())
+        return {};
+    const double scale = std::min(box.width() * dpr / pt.width(), box.height() * dpr / pt.height());
+    const QSize px(std::max(1, int(pt.width() * scale)), std::max(1, int(pt.height() * scale)));
+    QImage img = doc.render(0, px);
+    if (img.isNull())
+        return {};
+    // Pages are transparent where nothing is painted; give them paper.
+    QImage paper(img.size(), QImage::Format_RGB32);
+    paper.fill(Qt::white);
+    {
+        QPainter p(&paper);
+        p.drawImage(0, 0, img);
+    }
+    paper.save(cached, "PNG");
+    pm = QPixmap::fromImage(paper);
+    pm.setDevicePixelRatio(dpr);
+    return pm;
+}
 
 // First local PDF in a drag payload, or empty.
 QString pdfFromMime(const QMimeData* mime) {
@@ -131,27 +198,31 @@ private:
     QLabel* m_dir = nullptr;
 };
 
-// A square tile for the card/grid view: a big icon over the file name (no path).
+// A tile for the card/grid view: the document's first page as a cover (icon
+// chip fallback when it can't render) over the file name.
 class RecentTile : public QWidget {
     Q_OBJECT
 
 public:
+    static constexpr QSize kTile{200, 254};
+    static constexpr QSize kCover{176, 196};
+
     RecentTile(const QString& path, QWidget* parent) : QWidget(parent), m_path(path) {
         setObjectName("RecentTile");
         setAttribute(Qt::WA_StyledBackground, true);
         setCursor(Qt::PointingHandCursor);
-        setFixedSize(150, 142);
+        setFixedSize(kTile);
         setToolTip(path);
 
         auto* col = new QVBoxLayout(this);
-        col->setContentsMargins(10, 16, 10, 12);
-        col->setSpacing(12);
+        col->setContentsMargins(12, 14, 12, 12);
+        col->setSpacing(10);
 
-        m_chip = new QLabel(this);
-        m_chip->setObjectName("TileChip");
-        m_chip->setFixedSize(54, 54);
-        m_chip->setAlignment(Qt::AlignCenter);
-        col->addWidget(m_chip, 0, Qt::AlignHCenter);
+        m_cover = new QLabel(this);
+        m_cover->setObjectName("TileCover");
+        m_cover->setFixedSize(kCover);
+        m_cover->setAlignment(Qt::AlignCenter);
+        col->addWidget(m_cover, 0, Qt::AlignHCenter);
 
         m_fullName = QFileInfo(path).fileName();
         m_name = new QLabel(m_fullName, this);
@@ -165,9 +236,16 @@ public:
 
     void refresh() {
         const auto& pal = Theme::instance().palette();
-        m_chip->setStyleSheet(
-            QStringLiteral("background:%1; border-radius:12px;").arg(pal.accentTint.name()));
-        m_chip->setPixmap(Theme::instance().icon("file", pal.accent).pixmap(28, 28));
+        const QPixmap cover = coverPixmap(m_path, kCover, devicePixelRatioF());
+        if (!cover.isNull()) {
+            m_cover->setStyleSheet(QString());
+            m_cover->setPixmap(withRoundedCorners(cover, 6));
+        } else {
+            // No cover (encrypted or unreadable): the old accent icon chip.
+            m_cover->setStyleSheet(
+                QStringLiteral("background:%1; border-radius:12px;").arg(pal.accentTint.name()));
+            m_cover->setPixmap(Theme::instance().icon("file", pal.accent).pixmap(36, 36));
+        }
         m_name->setStyleSheet(
             QStringLiteral("color:%1; font-size:13px; font-weight:600;").arg(pal.text.name()));
     }
@@ -185,7 +263,7 @@ protected:
 private:
     QString m_path;
     QString m_fullName;
-    QLabel* m_chip = nullptr;
+    QLabel* m_cover = nullptr;
     QLabel* m_name = nullptr;
 };
 
@@ -257,7 +335,13 @@ HomeView::HomeView(QWidget* parent) : QWidget(parent) {
     }
     m_listBtn->setToolTip(tr("List view"));
     m_gridBtn->setToolTip(tr("Card view"));
-    m_listBtn->setChecked(true);
+    // The last-used mode survives restarts.
+    m_viewMode = QSettings().value(QStringLiteral("home/viewMode")).toString()
+                         == QLatin1String("grid")
+                     ? ViewMode::Grid
+                     : ViewMode::List;
+    m_listBtn->setChecked(m_viewMode == ViewMode::List);
+    m_gridBtn->setChecked(m_viewMode == ViewMode::Grid);
     connect(m_listBtn, &QPushButton::clicked, this, [this] { setViewMode(ViewMode::List); });
     connect(m_gridBtn, &QPushButton::clicked, this, [this] { setViewMode(ViewMode::Grid); });
     mainCol->addLayout(header);
@@ -309,14 +393,17 @@ void HomeView::setViewMode(ViewMode mode) {
     m_viewMode = mode;
     m_listBtn->setChecked(mode == ViewMode::List);
     m_gridBtn->setChecked(mode == ViewMode::Grid);
+    QSettings().setValue(QStringLiteral("home/viewMode"),
+                         mode == ViewMode::Grid ? QStringLiteral("grid")
+                                                : QStringLiteral("list"));
     rebuildIcons();
     refresh();
 }
 
 int HomeView::gridColumns() const {
-    // 150px tiles + 12px spacing.
+    // Tile width + 12px spacing.
     const int avail = m_scroll ? m_scroll->viewport()->width() : width();
-    return std::max(1, (avail + 12) / 162);
+    return std::max(1, (avail + 12) / (RecentTile::kTile.width() + 12));
 }
 
 void HomeView::refresh() {
