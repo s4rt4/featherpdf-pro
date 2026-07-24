@@ -22,7 +22,8 @@ jobs:
         with:
           version: "6.8.3"
           arch: win64_msvc2022_64
-          modules: "qtpdf qtspeech"
+          # qtmultimedia is a dependency of qtspeech's find_package config
+          modules: "qtpdf qtspeech qtmultimedia"
           cache: true
 
       - name: Install vcpkg dependencies
