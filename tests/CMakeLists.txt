@@ -83,7 +83,12 @@ qt_add_executable(test_scanner
 target_include_directories(test_scanner PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(test_scanner PRIVATE
     Qt6::Core
+    Qt6::Gui
     Qt6::Test
+    wiaguid
+    shlwapi
+    ole32
+    oleaut32
 )
 add_test(NAME scanner COMMAND test_scanner)
 set_tests_properties(scanner PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")

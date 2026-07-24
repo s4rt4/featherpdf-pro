@@ -2171,7 +2171,8 @@ void MainWindow::createPdf() {
 
 void MainWindow::scanDocument() {
     if (!Scanner::isAvailable()) {
-        m_toast->show(tr("Scanning isn't available yet on Windows — it's on the roadmap (WIA)."));
+        m_toast->show(
+            tr("Scanning isn't available — the Windows Image Acquisition service is disabled."));
         return;
     }
 

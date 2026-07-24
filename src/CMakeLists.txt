@@ -213,6 +213,11 @@ target_link_libraries(feather-pdf PRIVATE
     Qt6::TextToSpeech
     feather::qpdf
     feather::poppler-qt6
+    # WIA scanning (Scanner backend)
+    wiaguid
+    shlwapi
+    ole32
+    oleaut32
 )
 
 # Localization. lrelease compiles the .ts into .qm and qt_add_translations embeds

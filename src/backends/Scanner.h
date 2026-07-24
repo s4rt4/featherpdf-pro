@@ -20,38 +20,41 @@
 #include <QString>
 #include <QStringList>
 
-// Scanner access via SANE's `scanimage` command (the standard Linux scanning
-// stack). Lists devices and scans one or more pages to PNG files; the caller
-// then assembles them into a PDF (Converter::imagesToPdf) and may add an OCR
-// text layer. Pure subprocess — no SANE library link, matching how the rest of
-// the app shells out to LibreOffice / Tesseract / openssl.
+// Scanner access via WIA (Windows Image Acquisition, the standard Windows
+// scanning stack). Lists devices and scans one or more pages to PNG files; the
+// caller then assembles them into a PDF (Converter::imagesToPdf) and may add
+// an OCR text layer. Talks COM directly (IWiaDevMgr2 / IWiaTransfer) — no
+// extra runtime dependency beyond Windows itself.
 class Scanner {
 public:
     enum class Mode { Color, Gray };
 
     struct Device {
-        QString name;        // SANE device id, e.g. "epson2:libusb:001:004"
+        QString name;        // WIA device id, e.g. "{6BDD1FC6-…}\\0001"
         QString vendor;      // e.g. "Epson"
         QString model;       // e.g. "Perfection V39"
-        QString type;        // e.g. "flatbed scanner"
+        QString type;        // e.g. "scanner"
         QString label() const; // human label for a combo box
     };
 
-    // True if `scanimage` is on PATH (the only runtime dependency).
+    // True if the WIA runtime is reachable. It ships with Windows, so false
+    // effectively means the Windows Image Acquisition service is disabled.
     static bool isAvailable();
 
-    // Enumerate connected scanners (`scanimage -f`). Empty list with empty
-    // *error means "none found"; a non-empty *error means the query failed.
+    // Human word for an STI device type id (StiDeviceTypeScanner → "scanner").
+    // Exposed so the mapping can be unit-tested without hardware.
+    static QString typeLabel(int stiDeviceType);
+
+    // Enumerate connected scanners. Empty list with empty *error means "none
+    // found"; a non-empty *error means the query itself failed.
     static QList<Device> devices(QString* error);
 
-    // Parse the lines emitted by `scanimage -f '%d|%v|%m|%t%n'`. Exposed so the
-    // parsing can be unit-tested without hardware.
-    static QList<Device> parseDeviceList(const QString& raw);
-
     // Scan `pageCount` page(s) from `device` at `dpi`/`mode` into `outDir`,
-    // returning the produced PNG paths in page order. On failure returns an
-    // empty list and fills *error. Blocks until scanning finishes (it is slow);
-    // call from a busy-cursor context. `device` empty → SANE's default device.
+    // returning the produced PNG paths in page order. Multiple pages use the
+    // document feeder when the scanner has one, else repeated flatbed passes.
+    // On failure returns an empty list and fills *error. Blocks until scanning
+    // finishes (it is slow); call from a busy-cursor context. `device` empty →
+    // the first scanner found.
     static QStringList scanPages(const QString& device, int dpi, Mode mode, int pageCount,
                                  const QString& outDir, QString* error);
 };
