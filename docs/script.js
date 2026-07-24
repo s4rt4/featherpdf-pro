@@ -136,7 +136,7 @@
   var sigBar = document.getElementById('sigBar');
   if (steps.length && sigDetail) {
     var DETAILS = [
-      'Sign with a text or graphical appearance, using an NSS certificate or a PKCS#11 smartcard / YubiKey. This proves who signed.',
+      'Sign with a text or graphical appearance, using a certificate from the Windows store or a smartcard / YubiKey. This proves who signed.',
       'An RFC 3161 timestamp authority countersigns the signature. This proves when, independently of anyone’s clock.',
       'The certificate chain plus OCSP/CRL responses are embedded into the document’s /DSS as an incremental update, so existing signatures stay byte-for-byte intact. Verifiers no longer need the network, or the CA to still exist.',
       'A /DocTimeStamp covers every byte of the document (PAdES-LTA). Renew it every few years and the file outlives certificates, algorithms, even the timestamp authority itself.'

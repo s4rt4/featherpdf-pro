@@ -16,6 +16,7 @@
 
 #include "backends/LtvSigner.h"
 
+#include "backends/PdfIncrement.h"
 #include "backends/ToolLocator.h"
 
 #include <QByteArray>
@@ -169,96 +170,15 @@ QByteArray derToPem(const QString& openssl, const QByteArray& der) {
     return QByteArray();
 }
 
-// ── PDF incremental-update writer ────────────────────────────────────────────
+// ── PDF incremental-update writer (shared with Signer) ──────────────────────
 
-struct Obj {
-    int id = 0;
-    int gen = 0;
-    QByteArray serialized; // complete "<id> <gen> obj ... endobj\n"
-};
-
-// A raw indirect object: "<id> <gen> obj\n<body>\nendobj\n".
-QByteArray makeObj(int id, int gen, const QByteArray& body) {
-    QByteArray o = QByteArray::number(id) + ' ' + QByteArray::number(gen) + " obj\n";
-    o += body;
-    o += "\nendobj\n";
-    return o;
-}
-
-// A stream object holding `data` verbatim (used for cert/OCSP/CRL DER blobs).
-QByteArray makeStreamObj(int id, const QByteArray& data) {
-    QByteArray body = "<< /Length " + QByteArray::number(data.size()) + " >>\nstream\n";
-    body += data;
-    body += "\nendstream";
-    return makeObj(id, 0, body);
-}
-
-// The byte offset of the file's most recent cross-reference section, read from the
-// last "startxref" pointer. -1 if it can't be found.
-qint64 lastStartxref(const QByteArray& bytes) {
-    const int sx = bytes.lastIndexOf("startxref");
-    if (sx < 0)
-        return -1;
-    int i = sx + 9;
-    while (i < bytes.size() && (bytes[i] == '\r' || bytes[i] == '\n' || bytes[i] == ' '))
-        ++i;
-    qint64 off = 0;
-    bool any = false;
-    while (i < bytes.size() && bytes[i] >= '0' && bytes[i] <= '9') {
-        off = off * 10 + (bytes[i] - '0');
-        any = true;
-        ++i;
-    }
-    return any ? off : -1;
-}
-
-// Append `objs` (the changed catalog plus the new DSS objects) to `original` as a
-// classic incremental update: a fresh xref subsection per run of consecutive ids,
-// a trailer chaining back via /Prev, then startxref + %%EOF.
-QByteArray writeIncrementalUpdate(const QByteArray& original, qint64 prevXref, QList<Obj> objs,
-                                  int rootId, int rootGen, int newSize,
-                                  const QByteArray& idArray) {
-    QByteArray out = original;
-    if (!out.endsWith('\n'))
-        out += '\n';
-
-    std::sort(objs.begin(), objs.end(), [](const Obj& a, const Obj& b) { return a.id < b.id; });
-
-    QList<qint64> offsets;
-    offsets.reserve(objs.size());
-    for (const Obj& o : objs) {
-        offsets << out.size();
-        out += o.serialized;
-    }
-
-    const qint64 xrefPos = out.size();
-    QByteArray xref = "xref\n";
-    int i = 0;
-    while (i < objs.size()) {
-        int j = i;
-        while (j + 1 < objs.size() && objs[j + 1].id == objs[j].id + 1)
-            ++j;
-        xref += QByteArray::number(objs[i].id) + ' ' + QByteArray::number(j - i + 1) + '\n';
-        for (int k = i; k <= j; ++k) {
-            char line[32];
-            std::snprintf(line, sizeof(line), "%010lld %05d n\r\n",
-                          static_cast<long long>(offsets[k]), objs[k].gen);
-            xref += line;
-        }
-        i = j + 1;
-    }
-    out += xref;
-
-    QByteArray trailer = "trailer\n<< /Size " + QByteArray::number(newSize) + " /Root "
-        + QByteArray::number(rootId) + ' ' + QByteArray::number(rootGen) + " R /Prev "
-        + QByteArray::number(prevXref);
-    if (!idArray.isEmpty())
-        trailer += " /ID " + idArray;
-    trailer += " >>\n";
-    out += trailer;
-    out += "startxref\n" + QByteArray::number(xrefPos) + "\n%%EOF\n";
-    return out;
-}
+using PdfIncrement::Obj;
+using PdfIncrement::arrayWithAppended;
+using PdfIncrement::lastStartxref;
+using PdfIncrement::makeObj;
+using PdfIncrement::makeStreamObj;
+using PdfIncrement::rebuildDict;
+using PdfIncrement::writeIncrementalUpdate;
 
 // ── Walk the signatures already in the document ──────────────────────────────
 
@@ -290,36 +210,6 @@ void collectSignatureContents(QPDFObjectHandle field, QList<QByteArray>* out,
             for (int i = 0; i < kids.getArrayNItems(); ++i)
                 collectSignatureContents(kids.getArrayItem(i), out, seen);
     }
-}
-
-// Serialise a dictionary, substituting `overrides[key]` for those keys and keeping
-// every other key's value as-is (indirect references preserved). Keys present in
-// `overrides` but not in the dictionary are appended.
-QByteArray rebuildDict(QPDFObjectHandle dict, const QMap<QByteArray, QByteArray>& overrides) {
-    QByteArray out = "<<";
-    QSet<QByteArray> written;
-    for (const std::string& k : dict.getKeys()) {
-        const QByteArray key = QByteArray::fromStdString(k);
-        out += ' ' + key + ' ';
-        out += overrides.contains(key) ? overrides.value(key)
-                                       : QByteArray::fromStdString(dict.getKey(k).unparse());
-        written.insert(key);
-    }
-    for (auto it = overrides.constBegin(); it != overrides.constEnd(); ++it)
-        if (!written.contains(it.key()))
-            out += ' ' + it.key() + ' ' + it.value();
-    out += " >>";
-    return out;
-}
-
-// "[ a 0 R b 0 R ... ]" for an existing array's items plus one freshly added ref.
-QByteArray arrayWithAppended(QPDFObjectHandle array, int newId) {
-    QByteArray a = "[";
-    if (array.isArray())
-        for (int i = 0; i < array.getArrayNItems(); ++i)
-            a += ' ' + QByteArray::fromStdString(array.getArrayItem(i).unparse());
-    a += ' ' + QByteArray::number(newId) + " 0 R ]";
-    return a;
 }
 
 } // namespace

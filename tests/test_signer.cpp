@@ -1,15 +1,18 @@
 // Feather PDF — light on the system, full-featured on PDF.
 // Copyright (C) 2026 Feather PDF contributors. Licensed under GPLv3 (see LICENSE).
 //
-// Exercises the advanced signing backend: a graphical (image) signature
-// appearance produces a valid signature, and the RFC 3161 trusted-timestamp
-// helper fails gracefully when it has nothing to talk to. The signing half
-// builds a throwaway self-signed certificate in a temporary NSS database; if
-// the NSS tooling isn't present (or Poppler can't see the cert) those checks
-// skip rather than fail, so the suite stays green on minimal build hosts.
+// Exercises the CNG signing backend end to end, fully offline: a throwaway
+// self-signed certificate (CNG key + CertCreateSelfSignCertificate) is placed
+// in the user's "MY" store for the duration of the run, documents are signed
+// and verified with CryptoAPI, tampering is detected, LTV embeds the
+// certificate, and a loopback RFC 3161 TSA proves the archive-timestamp path.
+// A self-signed certificate can't chain to a trusted root, so the assertions
+// check SignatureInfo::intact (the CMS verifies over the byte ranges), not
+// `valid`. Everything the setup creates is removed in cleanupTestCase().
 
 #include "backends/LtvSigner.h"
 #include "backends/Signer.h"
+#include "backends/ToolLocator.h"
 
 #include <QDir>
 #include <QElapsedTimer>
@@ -27,8 +30,13 @@
 
 #include <atomic>
 #include <thread>
+#include <vector>
 
-#include <poppler-form.h>
+#define NOMINMAX
+#include <windows.h>
+
+#include <ncrypt.h>
+#include <wincrypt.h>
 
 #include <memory>
 
@@ -51,7 +59,135 @@ private:
     QTemporaryDir m_dir;
     QString m_pdf;
     QString m_png;
-    bool m_haveCert = false;
+    QString m_keyName;      // CNG key container backing the test certificate
+    QString m_certDisplay;  // the entry availableCertificates() shows for it
+    PCCERT_CONTEXT m_storeCert = nullptr; // the copy living in the MY store
+    HCERTSTORE m_store = nullptr;         // kept open so deletion sticks
+
+    static constexpr const wchar_t* kSubject = L"CN=Feather Test Signer";
+
+    // Remove every test certificate (ours and any a crashed run left behind),
+    // deleting each one's key container when it still exists. A stale
+    // same-name certificate whose key is gone would otherwise shadow the
+    // fresh one and break signing with NTE_BAD_KEYSET.
+    static void sweepTestCertificates() {
+        HCERTSTORE store =
+            CertOpenStore(CERT_STORE_PROV_SYSTEM_W, 0, 0, CERT_SYSTEM_STORE_CURRENT_USER, L"MY");
+        if (!store)
+            return;
+        for (;;) {
+            PCCERT_CONTEXT c = CertFindCertificateInStore(
+                store, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING, 0, CERT_FIND_SUBJECT_STR,
+                L"Feather Test Signer", nullptr);
+            if (!c)
+                break;
+            DWORD cb = 0;
+            if (CertGetCertificateContextProperty(c, CERT_KEY_PROV_INFO_PROP_ID, nullptr, &cb)) {
+                std::vector<BYTE> buf(cb);
+                if (CertGetCertificateContextProperty(c, CERT_KEY_PROV_INFO_PROP_ID, buf.data(),
+                                                      &cb)) {
+                    auto* kpi = reinterpret_cast<CRYPT_KEY_PROV_INFO*>(buf.data());
+                    NCRYPT_PROV_HANDLE prov = 0;
+                    if (NCryptOpenStorageProvider(&prov, kpi->pwszProvName, 0) == ERROR_SUCCESS) {
+                        NCRYPT_KEY_HANDLE key = 0;
+                        if (NCryptOpenKey(prov, &key, kpi->pwszContainerName, kpi->dwKeySpec, 0)
+                            == ERROR_SUCCESS)
+                            NCryptDeleteKey(key, 0);
+                        NCryptFreeObject(prov);
+                    }
+                }
+            }
+            CertDeleteCertificateFromStore(c); // frees the context
+        }
+        CertCloseStore(store, 0);
+    }
+
+    bool addTestCertificate() {
+        m_keyName = QStringLiteral("FeatherTestKey-%1")
+                        .arg(QCoreApplication::applicationPid());
+
+        NCRYPT_PROV_HANDLE prov = 0;
+        if (NCryptOpenStorageProvider(&prov, MS_KEY_STORAGE_PROVIDER, 0) != ERROR_SUCCESS)
+            return false;
+        NCRYPT_KEY_HANDLE key = 0;
+        const auto keyName = reinterpret_cast<const wchar_t*>(m_keyName.utf16());
+        if (NCryptCreatePersistedKey(prov, &key, NCRYPT_RSA_ALGORITHM, keyName, 0, 0)
+            != ERROR_SUCCESS) {
+            NCryptFreeObject(prov);
+            return false;
+        }
+        DWORD bits = 2048;
+        NCryptSetProperty(key, NCRYPT_LENGTH_PROPERTY, reinterpret_cast<PBYTE>(&bits),
+                          sizeof(bits), 0);
+        if (NCryptFinalizeKey(key, 0) != ERROR_SUCCESS) {
+            NCryptFreeObject(key);
+            NCryptFreeObject(prov);
+            return false;
+        }
+
+        BYTE nameBuf[256];
+        DWORD nameLen = sizeof(nameBuf);
+        if (!CertStrToNameW(X509_ASN_ENCODING, kSubject, CERT_X500_NAME_STR, nullptr, nameBuf,
+                            &nameLen, nullptr)) {
+            NCryptFreeObject(key);
+            NCryptFreeObject(prov);
+            return false;
+        }
+        CERT_NAME_BLOB subject{nameLen, nameBuf};
+
+        // Link the certificate to the persisted key, so a context enumerated
+        // from the store can re-open the key to sign.
+        CRYPT_KEY_PROV_INFO kpi{};
+        kpi.pwszContainerName = const_cast<LPWSTR>(keyName);
+        kpi.pwszProvName = const_cast<LPWSTR>(MS_KEY_STORAGE_PROVIDER);
+
+        CRYPT_ALGORITHM_IDENTIFIER alg{};
+        alg.pszObjId = const_cast<char*>(szOID_RSA_SHA256RSA);
+
+        SYSTEMTIME end;
+        GetSystemTime(&end);
+        end.wYear += 1;
+        PCCERT_CONTEXT cert =
+            CertCreateSelfSignCertificate(key, &subject, 0, &kpi, &alg, nullptr, &end, nullptr);
+        NCryptFreeObject(key);
+        NCryptFreeObject(prov);
+        if (!cert)
+            return false;
+
+        m_store =
+            CertOpenStore(CERT_STORE_PROV_SYSTEM_W, 0, 0, CERT_SYSTEM_STORE_CURRENT_USER, L"MY");
+        if (!m_store) {
+            CertFreeCertificateContext(cert);
+            return false;
+        }
+        const BOOL added = CertAddCertificateContextToStore(
+            m_store, cert, CERT_STORE_ADD_REPLACE_EXISTING, &m_storeCert);
+        CertFreeCertificateContext(cert);
+        return added == TRUE;
+    }
+
+    void removeTestCertificate() {
+        if (m_storeCert) {
+            CertDeleteCertificateFromStore(m_storeCert); // also frees the context
+            m_storeCert = nullptr;
+        }
+        if (m_store) {
+            CertCloseStore(m_store, 0);
+            m_store = nullptr;
+        }
+        if (!m_keyName.isEmpty()) {
+            NCRYPT_PROV_HANDLE prov = 0;
+            if (NCryptOpenStorageProvider(&prov, MS_KEY_STORAGE_PROVIDER, 0) == ERROR_SUCCESS) {
+                NCRYPT_KEY_HANDLE key = 0;
+                if (NCryptOpenKey(prov, &key,
+                                  reinterpret_cast<const wchar_t*>(m_keyName.utf16()), 0, 0)
+                    == ERROR_SUCCESS)
+                    NCryptDeleteKey(key, 0); // frees the handle
+                NCryptFreeObject(prov);
+            }
+        }
+        sweepTestCertificates(); // belt and braces: leave the store spotless
+    }
 
 private slots:
     void initTestCase() {
@@ -80,64 +216,90 @@ private slots:
             QVERIFY(img.save(m_png));
         }
 
-        // Best-effort: stand up a self-signed cert in a temp NSS DB so the
-        // image-signature test has something to sign with.
-        const QString openssl = QStandardPaths::findExecutable(QStringLiteral("openssl"));
-        const QString certutil = QStandardPaths::findExecutable(QStringLiteral("certutil"));
-        const QString pk12util = QStandardPaths::findExecutable(QStringLiteral("pk12util"));
-        if (openssl.isEmpty() || certutil.isEmpty() || pk12util.isEmpty())
+        // The throwaway certificate the signing tests use. If the environment
+        // forbids writing to the user store, those tests skip rather than fail.
+        sweepTestCertificates(); // a crashed run must not shadow the fresh cert
+        if (!addTestCertificate())
             return;
-
-        const QString key = d + QStringLiteral("/k.pem");
-        const QString crt = d + QStringLiteral("/c.pem");
-        const QString p12 = d + QStringLiteral("/c.p12");
-        const QString sqldb = QStringLiteral("sql:") + d;
-        const bool built =
-            run(openssl, {"req", "-x509", "-newkey", "rsa:2048", "-keyout", key, "-out", crt,
-                          "-days", "2", "-nodes", "-subj", "/CN=Feather Test Signer"})
-            && run(openssl, {"pkcs12", "-export", "-in", crt, "-inkey", key, "-out", p12,
-                             "-passout", "pass:", "-name", "Feather Test Signer"})
-            && run(certutil, {"-N", "-d", sqldb, "--empty-password"})
-            && run(pk12util, {"-d", sqldb, "-i", p12, "-W", ""});
-        if (!built)
-            return;
-
-        Poppler::setNSSDir(d);
-        m_haveCert = Signer::availableCertificates().contains(QStringLiteral("Feather Test Signer"));
+        for (const QString& c : Signer::availableCertificates())
+            if (c.startsWith(QLatin1String("Feather Test Signer ("))) {
+                m_certDisplay = c;
+                break;
+            }
     }
 
-    // A graphical signature signs cleanly and validates as intact.
-    void signWithImageProducesValidSignature() {
-        if (!m_haveCert)
-            QSKIP("NSS signing certificate unavailable in this environment");
+    void cleanupTestCase() { removeTestCertificate(); }
+
+    // The store certificate surfaces in the list with its expiry.
+    void certificateAppearsInList() {
+        if (!m_storeCert)
+            QSKIP("couldn't create a certificate in the user store");
+        QVERIFY2(!m_certDisplay.isEmpty(),
+                 qPrintable(Signer::availableCertificates().join(QStringLiteral(", "))));
+    }
+
+    // A graphical signature signs cleanly and verifies as intact.
+    void signWithImageProducesIntactSignature() {
+        if (m_certDisplay.isEmpty())
+            QSKIP("signing certificate unavailable in this environment");
 
         const QString out = m_dir.path() + QStringLiteral("/signed.pdf");
         QString error;
-        const bool ok = Signer::sign(m_pdf, out, QStringLiteral("Feather Test Signer"),
-                                     QString(), QStringLiteral("Approved"),
-                                     QStringLiteral("Jakarta"), 0, QRectF(48, 40, 220, 90), m_png,
-                                     &error);
+        const bool ok = Signer::sign(m_pdf, out, m_certDisplay, QString(),
+                                     QStringLiteral("Approved"), QStringLiteral("Jakarta"), 0,
+                                     QRectF(48, 40, 220, 90), m_png, &error);
         QVERIFY2(ok, qPrintable(error));
         QVERIFY(QFileInfo::exists(out));
 
         const QList<Signer::SignatureInfo> sigs = Signer::verify(out);
         QCOMPARE(sigs.size(), 1);
-        QVERIFY2(sigs.first().valid, qPrintable(sigs.first().status));
+        QVERIFY2(sigs.first().intact, qPrintable(sigs.first().status));
         QCOMPARE(sigs.first().signer, QStringLiteral("Feather Test Signer"));
+        QCOMPARE(sigs.first().reason, QStringLiteral("Approved"));
+        QCOMPARE(sigs.first().location, QStringLiteral("Jakarta"));
+        // Self-signed → intact but not chained to a trusted root.
+        QVERIFY(!sigs.first().valid);
     }
 
-    // Signing without an image still works (the text appearance path is unaffected).
+    // Signing without an image still works (the text appearance path).
     void signWithoutImageStillWorks() {
-        if (!m_haveCert)
-            QSKIP("NSS signing certificate unavailable in this environment");
+        if (m_certDisplay.isEmpty())
+            QSKIP("signing certificate unavailable in this environment");
 
         const QString out = m_dir.path() + QStringLiteral("/signed-text.pdf");
         QString error;
-        const bool ok = Signer::sign(m_pdf, out, QStringLiteral("Feather Test Signer"),
-                                     QString(), QString(), QString(), 0,
-                                     QRectF(48, 40, 220, 60), QString(), &error);
+        const bool ok = Signer::sign(m_pdf, out, m_certDisplay, QString(), QString(), QString(),
+                                     0, QRectF(48, 40, 220, 60), QString(), &error);
         QVERIFY2(ok, qPrintable(error));
-        QCOMPARE(Signer::verify(out).size(), 1);
+        const QList<Signer::SignatureInfo> sigs = Signer::verify(out);
+        QCOMPARE(sigs.size(), 1);
+        QVERIFY2(sigs.first().intact, qPrintable(sigs.first().status));
+    }
+
+    // Any change to the signed bytes must break the signature.
+    void tamperingIsDetected() {
+        if (m_certDisplay.isEmpty())
+            QSKIP("signing certificate unavailable in this environment");
+
+        const QString out = m_dir.path() + QStringLiteral("/tampered.pdf");
+        QString error;
+        QVERIFY2(Signer::sign(m_pdf, out, m_certDisplay, QString(), QString(), QString(), 0,
+                              QRectF(48, 40, 200, 56), QString(), &error),
+                 qPrintable(error));
+
+        QFile f(out);
+        QVERIFY(f.open(QIODevice::ReadWrite));
+        f.seek(64); // well inside the first signed range
+        char b = 0;
+        f.peek(&b, 1);
+        b = b == 'x' ? 'y' : 'x';
+        f.write(&b, 1);
+        f.close();
+
+        const QList<Signer::SignatureInfo> sigs = Signer::verify(out);
+        QCOMPARE(sigs.size(), 1);
+        QVERIFY(!sigs.first().intact);
+        QVERIFY(!sigs.first().valid);
     }
 
     // The timestamp helper refuses an empty TSA URL up front.
@@ -161,56 +323,21 @@ private slots:
         QVERIFY(!QFileInfo::exists(token));
     }
 
-    // PKCS#11: registering a security module makes it appear in the device list,
-    // and removing it takes it away. Uses a real module that's present on the box
-    // (no physical token needed to register one) against a throwaway NSS DB.
-    void securityDeviceRegisterListRemove() {
-        if (!Signer::hasSecurityDeviceTools())
-            QSKIP("modutil (nss-tools) not available");
-        // p11-kit-trust is the system trust module: it always loads (no reader or
-        // pcscd needed), so it's a reliable stand-in for exercising the register
-        // / list / remove plumbing. A real token uses e.g. opensc-pkcs11.so.
-        QString module;
-        for (const QString& c : {QStringLiteral("/usr/lib64/pkcs11/p11-kit-trust.so"),
-                                 QStringLiteral("/usr/lib/pkcs11/p11-kit-trust.so"),
-                                 QStringLiteral("/usr/lib/x86_64-linux-gnu/pkcs11/p11-kit-trust.so")})
-            if (QFileInfo::exists(c)) {
-                module = c;
-                break;
-            }
-        if (module.isEmpty())
-            QSKIP("no loadable PKCS#11 module available to register");
-
-        QTemporaryDir nss;
-        QVERIFY(nss.isValid());
-        Signer::useNssDatabase(nss.path());
-
-        QString err;
-        QVERIFY2(Signer::addSecurityDevice(QStringLiteral("FeatherTestToken"), module, &err),
-                 qPrintable(err));
-        QVERIFY2(Signer::securityDevices().contains(QStringLiteral("FeatherTestToken")),
-                 qPrintable(Signer::securityDevices().join(QStringLiteral(", "))));
-        QVERIFY2(Signer::removeSecurityDevice(QStringLiteral("FeatherTestToken"), &err),
-                 qPrintable(err));
-        QVERIFY(!Signer::securityDevices().contains(QStringLiteral("FeatherTestToken")));
-    }
-
     // Long-term validation: adding a DSS to a signed document embeds the signer's
-    // certificate chain, keeps the original signature intact (the incremental
-    // update never touches the signed byte range), and records a VRI entry keyed by
-    // the signature. Runs fully offline — a self-signed cert has no OCSP/CRL, so the
-    // DSS holds just the certificate(s), which is still valid LTV material.
+    // certificate, keeps the original signature intact (the incremental update
+    // never touches the signed byte range), and records a VRI entry.
     void ltvAddsDssAndPreservesSignature() {
-        if (!m_haveCert)
-            QSKIP("NSS signing certificate unavailable in this environment");
+        if (m_certDisplay.isEmpty())
+            QSKIP("signing certificate unavailable in this environment");
+        if (ToolLocatorHasNoOpenssl())
+            QSKIP("openssl unavailable (LtvSigner shells out to it)");
 
         const QString signed_ = m_dir.path() + QStringLiteral("/ltv-in.pdf");
         QString error;
-        QVERIFY2(Signer::sign(m_pdf, signed_, QStringLiteral("Feather Test Signer"), QString(),
+        QVERIFY2(Signer::sign(m_pdf, signed_, m_certDisplay, QString(),
                               QStringLiteral("Approved"), QStringLiteral("Jakarta"), 0,
                               QRectF(48, 40, 220, 60), QString(), &error),
                  qPrintable(error));
-        QVERIFY(Signer::verify(signed_).size() == 1 && Signer::verify(signed_).first().valid);
 
         const QString out = m_dir.path() + QStringLiteral("/ltv-out.pdf");
         LtvSigner::Result res;
@@ -221,10 +348,10 @@ private slots:
         QCOMPARE(res.signatures, 1);
         QVERIFY(res.certs >= 1);
 
-        // The original signature still validates: the byte range wasn't disturbed.
+        // The original signature still verifies: the byte range wasn't disturbed.
         const QList<Signer::SignatureInfo> sigs = Signer::verify(out);
         QCOMPARE(sigs.size(), 1);
-        QVERIFY2(sigs.first().valid, qPrintable(sigs.first().status));
+        QVERIFY2(sigs.first().intact, qPrintable(sigs.first().status));
 
         // The catalog now references a /DSS with a non-empty /Certs and a /VRI.
         QPDF pdf;
@@ -236,11 +363,12 @@ private slots:
         QVERIFY(certs.getArrayNItems() >= 1);
         QVERIFY(dss.getKey("/VRI").isDictionary());
 
-        // The embedded cert really is a certificate stream (DER starts with a SEQUENCE).
+        // The embedded cert really is a certificate stream (DER SEQUENCE).
         QPDFObjectHandle cert0 = certs.getArrayItem(0);
         std::shared_ptr<Buffer> buf = cert0.getStreamData();
         QVERIFY(buf && buf->getSize() > 0);
-        QCOMPARE(static_cast<unsigned char>(buf->getBuffer()[0]), static_cast<unsigned char>(0x30));
+        QCOMPARE(static_cast<unsigned char>(buf->getBuffer()[0]),
+                 static_cast<unsigned char>(0x30));
     }
 
     // LTV refuses a document that has no signatures, with a clear message.
@@ -252,15 +380,15 @@ private slots:
         QVERIFY(!QFileInfo::exists(out));
     }
 
-    // PAdES-LTA: embed an archive document timestamp. A throwaway RFC 3161 TSA is
-    // stood up locally (an openssl-backed responder on a loopback socket), so the
-    // whole round-trip runs offline. We assert the timestamp covers the entire
-    // document, the original signature is untouched, and a real token landed in the
-    // DocTimeStamp's /Contents.
+    // PAdES-LTA: embed an archive document timestamp via a loopback RFC 3161 TSA
+    // (an openssl-backed responder on a local socket), fully offline. The
+    // timestamp must cover the whole document and leave the signature intact.
     void docTimestampCoversWholeDocument() {
-        if (!m_haveCert)
-            QSKIP("NSS signing certificate unavailable in this environment");
-        const QString openssl = QStandardPaths::findExecutable(QStringLiteral("openssl"));
+        if (m_certDisplay.isEmpty())
+            QSKIP("signing certificate unavailable in this environment");
+        // ToolLocator probes candidates and skips broken PATH copies (e.g. the
+        // openssl.exe some Apache bundles ship).
+        const QString openssl = ToolLocator::openssl();
         const QString curl = QStandardPaths::findExecutable(QStringLiteral("curl"));
         if (openssl.isEmpty() || curl.isEmpty())
             QSKIP("openssl/curl unavailable");
@@ -345,8 +473,8 @@ private slots:
         // the event loop turning so the TSA socket gets serviced.
         const QString signed_ = m_dir.path() + QStringLiteral("/ts-in.pdf");
         QString error;
-        QVERIFY2(Signer::sign(m_pdf, signed_, QStringLiteral("Feather Test Signer"), QString(),
-                              QString(), QString(), 0, QRectF(48, 40, 200, 56), QString(), &error),
+        QVERIFY2(Signer::sign(m_pdf, signed_, m_certDisplay, QString(), QString(), QString(), 0,
+                              QRectF(48, 40, 200, 56), QString(), &error),
                  qPrintable(error));
 
         const QString out = m_dir.path() + QStringLiteral("/ts-out.pdf");
@@ -365,13 +493,13 @@ private slots:
         QVERIFY(served > 0);
         QVERIFY(QFileInfo::exists(out));
 
-        // The original signature is still valid (its byte range was never touched).
+        // The original signature is still intact (its byte range never moved).
         const QList<Signer::SignatureInfo> sigs = Signer::verify(out);
-        bool originalValid = false;
+        bool originalIntact = false;
         for (const Signer::SignatureInfo& s : sigs)
-            if (s.signer == QStringLiteral("Feather Test Signer") && s.valid)
-                originalValid = true;
-        QVERIFY(originalValid);
+            if (s.signer == QStringLiteral("Feather Test Signer") && s.intact)
+                originalIntact = true;
+        QVERIFY(originalIntact);
 
         // A /DocTimeStamp whose byte range runs to the end of the file (the whole
         // document is covered) and whose /Contents holds a non-empty token.
@@ -401,18 +529,8 @@ private slots:
         QVERIFY(foundDts);
     }
 
-    // A missing module path is rejected before touching NSS.
-    void addSecurityDeviceRejectsMissingModule() {
-        if (!Signer::hasSecurityDeviceTools())
-            QSKIP("modutil (nss-tools) not available");
-        QTemporaryDir nss;
-        QVERIFY(nss.isValid());
-        Signer::useNssDatabase(nss.path());
-        QString err;
-        QVERIFY(!Signer::addSecurityDevice(QStringLiteral("X"),
-                                           QStringLiteral("/no/such/module.so"), &err));
-        QVERIFY(!err.isEmpty());
-    }
+private:
+    static bool ToolLocatorHasNoOpenssl() { return ToolLocator::openssl().isEmpty(); }
 };
 
 QTEST_MAIN(TestSigner)

@@ -144,7 +144,7 @@ private:
     void flattenDocument();   // bake annotations/forms in (lossless or raster)
     void splitDocument();     // split into several files
     void combineDocuments();  // merge several PDFs into one (QPDF)
-    void signDocument();      // digitally sign with a certificate (Poppler/NSS)
+    void signDocument();      // digitally sign with a Windows-store certificate (CNG)
     void viewSignatures();    // show/verify the document's existing signatures
     void addLongTermValidation(); // embed a DSS so signatures validate long term (LTV)
     void recognizeText();     // OCR - add a searchable text layer (Tesseract)

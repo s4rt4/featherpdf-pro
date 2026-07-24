@@ -16,8 +16,6 @@
 
 #include "ui/SignDialog.h"
 
-#include "backends/Signer.h"
-#include "ui/SecurityDevicesDialog.h"
 #include "ui/Theme.h"
 
 #include <QButtonGroup>
@@ -90,32 +88,12 @@ SignDialog::SignDialog(const QStringList& certificates, QWidget* parent) : QDial
     m_reason->setPlaceholderText(tr("e.g. Approved"));
     m_location = new QLineEdit(this);
     m_location->setPlaceholderText(tr("e.g. Jakarta"));
-    m_password = new QLineEdit(this);
-    m_password->setEchoMode(QLineEdit::Password);
-    m_password->setPlaceholderText(tr("Leave empty if the key has no password"));
-    // The certificate, plus a way to register a PKCS#11 hardware token whose
-    // certificates then appear in this list.
-    auto* devicesBtn = new QPushButton(tr("Security devices…"), this);
-    devicesBtn->setObjectName(QStringLiteral("Browse"));
-    devicesBtn->setCursor(Qt::PointingHandCursor);
-    auto* certRow = new QHBoxLayout;
-    certRow->setSpacing(8);
-    certRow->addWidget(m_cert, 1);
-    certRow->addWidget(devicesBtn);
-    form->addRow(tr("Certificate"), certRow);
-    connect(devicesBtn, &QPushButton::clicked, this, [this] {
-        SecurityDevicesDialog(this).exec();
-        // A newly registered token may have added certificates; refresh the list.
-        const QString current = m_cert->currentText();
-        m_cert->clear();
-        m_cert->addItems(Signer::availableCertificates());
-        const int idx = m_cert->findText(current);
-        if (idx >= 0)
-            m_cert->setCurrentIndex(idx);
-    });
+    // Certificates come from the Windows store; a smartcard or USB token's
+    // certificate appears here automatically, and Windows asks for its PIN
+    // when the signature is created.
+    form->addRow(tr("Certificate"), m_cert);
     form->addRow(tr("Reason"), m_reason);
     form->addRow(tr("Location"), m_location);
-    form->addRow(tr("Password"), m_password);
 
     // Appearance: the default text block, or a graphical (image) signature.
     m_apprText = new QRadioButton(tr("Text"), this);
@@ -213,7 +191,6 @@ SignDialog::SignDialog(const QStringList& certificates, QWidget* parent) : QDial
 QString SignDialog::certificate() const { return m_cert->currentText(); }
 QString SignDialog::reason() const { return m_reason->text().trimmed(); }
 QString SignDialog::location() const { return m_location->text().trimmed(); }
-QString SignDialog::password() const { return m_password->text(); }
 
 QString SignDialog::imagePath() const {
     if (!m_apprImage->isChecked())

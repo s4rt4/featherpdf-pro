@@ -25,10 +25,11 @@ class QComboBox;
 class QLineEdit;
 class QRadioButton;
 
-// Collects the choices for digitally signing the document: which certificate,
-// an optional reason and location, the key password, an optional graphical
-// (image) appearance, and an optional RFC 3161 trusted timestamp. The signature
-// is placed on the current page by the caller.
+// Collects the choices for digitally signing the document: which certificate
+// (from the Windows certificate store — Windows prompts for smartcard PINs
+// itself), an optional reason and location, an optional graphical (image)
+// appearance, and an optional RFC 3161 trusted timestamp. The signature is
+// placed on the current page by the caller.
 class SignDialog : public QDialog {
     Q_OBJECT
 
@@ -38,7 +39,6 @@ public:
     QString certificate() const;
     QString reason() const;
     QString location() const;
-    QString password() const;
 
     // Empty unless the user chose a graphical signature with a valid image file.
     QString imagePath() const;
@@ -50,7 +50,6 @@ private:
     QComboBox* m_cert = nullptr;
     QLineEdit* m_reason = nullptr;
     QLineEdit* m_location = nullptr;
-    QLineEdit* m_password = nullptr;
     QRadioButton* m_apprText = nullptr;
     QRadioButton* m_apprImage = nullptr;
     QLineEdit* m_imagePath = nullptr;

@@ -25,7 +25,7 @@ engine.
 - **Semantic layer (text, search, forms, annotations):** Poppler-Qt6
 - **Lossless structure (merge, split, rotate, encrypt, metadata):** QPDF
 - OCR with Tesseract · conversion with LibreOffice · read-aloud with the
-  Windows voices (SAPI) · signing with OpenSSL/NSS (moving to Windows CNG)
+  Windows voices (SAPI) · signing with Windows CNG (certificates from the Windows store)
 
 Feather deliberately avoids in-process AGPL libraries (MuPDF, Ghostscript) to
 stay GPLv3.

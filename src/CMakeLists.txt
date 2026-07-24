@@ -28,6 +28,8 @@ qt_add_executable(feather-pdf
     backends/Signer.h
     backends/LtvSigner.cpp
     backends/LtvSigner.h
+    backends/PdfIncrement.cpp
+    backends/PdfIncrement.h
     backends/Converter.cpp
     backends/Converter.h
     backends/Ocr.cpp
@@ -95,8 +97,6 @@ qt_add_executable(feather-pdf
     ui/FormPanel.h
     ui/SignDialog.cpp
     ui/SignDialog.h
-    ui/SecurityDevicesDialog.cpp
-    ui/SecurityDevicesDialog.h
     ui/SignaturesDialog.cpp
     ui/SignaturesDialog.h
     ui/OcrDialog.cpp
@@ -218,6 +218,8 @@ target_link_libraries(feather-pdf PRIVATE
     shlwapi
     ole32
     oleaut32
+    # CNG/CryptoAPI signing (Signer backend)
+    crypt32
 )
 
 # Localization. lrelease compiles the .ts into .qm and qt_add_translations embeds
