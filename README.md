@@ -107,16 +107,21 @@ Optional runtime tools, picked up automatically when installed: **Tesseract**
 
 `cpack` from the build dir produces a portable ZIP (Qt DLLs bundled via
 windeployqt). `packaging/windows/feather-pdf-pro.iss` builds the Inno Setup
-installer with the file association and Explorer context-menu actions.
+installer with the file association, Explorer context-menu actions, and the
+Explorer thumbnail provider (`feather-thumb.dll`). Run
+`scripts/stage-tesseract.ps1` before `iscc` to offer Tesseract OCR as an
+optional installer component; `packaging/windows/winget/` holds the winget
+manifests (submission needs a public release — the release checklist is in
+the version manifest's header comment).
 
 ## Roadmap
 
 | Milestone | Focus | Status |
 |-----------|-------|--------|
-| W0 | Build & run on Windows/MSVC (this port) | ◐ In progress |
-| W1 | Windows-native signing (CNG / certificate store) | 🔜 |
-| W2 | Scanning via WIA | 🔜 |
-| W3 | Installer polish: bundled Tesseract, winget, Explorer thumbnails | 🔜 |
+| W0 | Build & run on Windows/MSVC (this port) | ✅ |
+| W1 | Windows-native signing (CNG / certificate store) | ✅ |
+| W2 | Scanning via WIA | ✅ |
+| W3 | Installer polish: bundled Tesseract, winget, Explorer thumbnails | ✅ (winget submission awaits a public release) |
 | M8 | Editing — existing-text reflow & images *(shared with Linux)* | ◐ |
 
 ## License

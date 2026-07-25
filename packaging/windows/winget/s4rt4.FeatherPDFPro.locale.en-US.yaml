@@ -1,0 +1,25 @@
+# Feather PDF Pro — winget default-locale manifest.
+PackageIdentifier: s4rt4.FeatherPDFPro
+PackageVersion: 0.0.1
+PackageLocale: en-US
+Publisher: Feather PDF contributors
+PublisherUrl: https://github.com/s4rt4/featherpdf-pro
+PublisherSupportUrl: https://github.com/s4rt4/featherpdf-pro/issues
+PackageName: Feather PDF Pro
+PackageUrl: https://github.com/s4rt4/featherpdf-pro
+License: GPL-3.0-or-later
+LicenseUrl: https://github.com/s4rt4/featherpdf-pro/blob/main/LICENSE
+ShortDescription: Native, open-source PDF tool for Windows
+Description: >-
+  Feather PDF Pro is a fast, native PDF workspace for Windows: tabbed viewing,
+  page editing, annotations, forms, digital signatures (Windows certificate
+  store), OCR, scanning (WIA), conversion, comparison, redaction, and a
+  headless command-line mode for batch work.
+Tags:
+  - pdf
+  - pdf-editor
+  - ocr
+  - annotations
+  - open-source
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0
