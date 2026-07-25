@@ -58,8 +58,16 @@ QImage inkMask(const QImage& gray, int threshold) {
 // into sharp horizontal bands - i.e. the lines are level.
 double profileVariance(const QImage& ink, double angle) {
     QImage r = ink;
-    if (std::abs(angle) > 1e-3)
+    if (std::abs(angle) > 1e-3) {
         r = ink.transformed(QTransform().rotate(angle), Qt::FastTransformation);
+        // transformed() promotes Grayscale8 to a 32-bit format for non-trivial
+        // matrices; the byte-wise row sums below would then read BGRA memory
+        // and reward whichever candidate grows the canvas most (±maxAngle).
+        // The exposed corners become transparent black — no ink — so the
+        // conversion back is lossless for the mask.
+        if (r.format() != QImage::Format_Grayscale8)
+            r = r.convertToFormat(QImage::Format_Grayscale8);
+    }
     const int rw = r.width(), rh = r.height();
     if (rw == 0 || rh == 0)
         return 0.0;
@@ -181,9 +189,14 @@ double estimateSkew(const QImage& src, double maxAngleDeg, double stepDeg) {
 
     if (stepDeg <= 0.0)
         stepDeg = 0.5;
+    // Seed with the straight score so ties (e.g. an all-white page, where
+    // every angle scores zero) keep the page as-is instead of rotating it to
+    // whichever candidate happened to be scored first.
     double best = 0.0;
-    double bestScore = -1.0;
+    double bestScore = profileVariance(ink, 0.0);
     for (double a = -maxAngleDeg; a <= maxAngleDeg + 1e-9; a += stepDeg) {
+        if (std::abs(a) < 1e-3)
+            continue; // already scored as the seed
         const double score = profileVariance(ink, a);
         if (score > bestScore) {
             bestScore = score;

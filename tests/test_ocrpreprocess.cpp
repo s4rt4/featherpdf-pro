@@ -83,6 +83,25 @@ private slots:
         QVERIFY2(std::abs(a) <= 1.0, qPrintable(QString::number(a)));
     }
 
+    // A page holding just one short line of text must still read as straight.
+    // This used to fail: QImage::transformed() promotes the Grayscale8 ink
+    // mask to a 32-bit format, and the byte-wise row sums then scored tilted
+    // candidates from BGRA memory garbage — with this little ink the garbage
+    // beat the straight angle and real pages reached Tesseract ~8° tilted.
+    void deskewKeepsSparsePageStraight() {
+        QImage img(1200, 500, QImage::Format_Grayscale8);
+        img.fill(255);
+        // Glyph-like ink: thin dashed strokes on one line, page otherwise white.
+        for (int y = 195; y < 245; ++y) {
+            uchar* row = img.scanLine(y);
+            for (int x = 60; x < 900; ++x)
+                if (x % 24 < 5)
+                    row[x] = 0;
+        }
+        const double a = OcrPreprocess::estimateSkew(img);
+        QVERIFY2(std::abs(a) <= 0.51, qPrintable(QString::number(a)));
+    }
+
     // Rotating the bands by a known angle and estimating skew should recover the
     // correction angle (the negative of the applied rotation), and applying
     // deskew should substantially reduce the residual skew.
