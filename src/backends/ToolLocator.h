@@ -38,8 +38,15 @@ QString soffice();
 // scanning C:\Program Files\gs\gs<version>\bin when not on PATH.
 QString ghostscript();
 
-// Tesseract OCR: PATH, then the standard Tesseract-OCR install directory.
+// Tesseract OCR: a copy bundled by the installer (tools/tesseract next to the
+// exe), then PATH, then the standard Tesseract-OCR install directory.
 QString tesseract();
+
+// The tessdata directory that belongs to the bundled Tesseract, or empty when
+// tesseract() resolves to a system install. A bundled (vcpkg-built) Tesseract
+// has a compile-time data path that points at the build machine, so callers
+// must pass this via TESSDATA_PREFIX; system installs find their own data.
+QString tesseractDataDir();
 
 // Poppler's pdfimages utility: PATH, then next to any bundled poppler tools.
 QString pdfimages();

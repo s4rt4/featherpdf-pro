@@ -39,8 +39,27 @@ ChangesAssociations=yes
 Name: "associate"; Description: "Make {#AppName} the default app for PDF files"; Flags: unchecked
 Name: "context"; Description: "Add Feather PDF actions to the Explorer right-click menu"
 
+; The OCR engine is only offered when scripts/stage-tesseract.ps1 was run
+; before compiling this script; without it the installer simply has no "ocr"
+; component and Text Recognition falls back to a system-installed Tesseract.
+#define TesseractStaged DirExists(StagingDir + "\bin\tools\tesseract")
+
+[Types]
+Name: "full"; Description: "Full installation"
+Name: "compact"; Description: "Compact installation (no OCR engine)"
+Name: "custom"; Description: "Custom installation"; Flags: iscustom
+
+[Components]
+Name: "app"; Description: "{#AppName}"; Types: full compact custom; Flags: fixed
+#if TesseractStaged
+Name: "ocr"; Description: "OCR engine (Tesseract + English/Indonesian data)"; Types: full
+#endif
+
 [Files]
-Source: "{#StagingDir}\bin\*"; DestDir: "{app}\bin"; Flags: recursesubdirs ignoreversion
+Source: "{#StagingDir}\bin\*"; DestDir: "{app}\bin"; Excludes: "\tools\tesseract\*"; Flags: recursesubdirs ignoreversion; Components: app
+#if TesseractStaged
+Source: "{#StagingDir}\bin\tools\tesseract\*"; DestDir: "{app}\bin\tools\tesseract"; Flags: recursesubdirs ignoreversion; Components: ocr
+#endif
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\bin\{#AppExe}"

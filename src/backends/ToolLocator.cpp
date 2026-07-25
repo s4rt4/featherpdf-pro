@@ -137,6 +137,14 @@ QString tesseract() {
     return inProgramFiles(QStringLiteral("Tesseract-OCR/tesseract.exe"));
 }
 
+QString tesseractDataDir() {
+    if (bundled(QStringLiteral("tesseract/tesseract.exe")).isEmpty())
+        return QString();
+    const QString dir = QCoreApplication::applicationDirPath() +
+                        QStringLiteral("/tools/tesseract/tessdata");
+    return QFileInfo::exists(dir) ? QDir::toNativeSeparators(dir) : QString();
+}
+
 QString pdfimages() {
     const QString shipped = bundled(QStringLiteral("poppler/pdfimages.exe"));
     if (!shipped.isEmpty())

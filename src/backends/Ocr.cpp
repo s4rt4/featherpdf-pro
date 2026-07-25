@@ -45,6 +45,20 @@ QString tesseract() {
     return ToolLocator::tesseract();
 }
 
+// Start `args` against the resolved tesseract. The installer-bundled copy is
+// a vcpkg build whose compiled-in data path points at the build machine, so
+// its tessdata directory must be handed over via TESSDATA_PREFIX; a system
+// install keeps its own environment.
+void startTesseract(QProcess& p, const QStringList& args) {
+    const QString dataDir = ToolLocator::tesseractDataDir();
+    if (!dataDir.isEmpty()) {
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        env.insert(QStringLiteral("TESSDATA_PREFIX"), dataDir);
+        p.setProcessEnvironment(env);
+    }
+    p.start(tesseract(), args);
+}
+
 std::string num(double v) {
     return QByteArray::number(v, 'f', 2).toStdString();
 }
@@ -91,7 +105,7 @@ bool Ocr::isAvailable() {
 QStringList Ocr::languages() {
     QStringList langs;
     QProcess p;
-    p.start(tesseract(), {QStringLiteral("--list-langs")});
+    startTesseract(p, {QStringLiteral("--list-langs")});
     if (!p.waitForFinished(8000))
         return langs;
     const QString out = QString::fromUtf8(p.readAllStandardError()) +
@@ -117,8 +131,8 @@ QString Ocr::detectLanguage(const QImage& sample, const QString& fallback) {
         return fallback;
 
     QProcess proc;
-    proc.start(tess, {imgPath, QStringLiteral("stdout"), QStringLiteral("--psm"),
-                      QStringLiteral("0")});
+    startTesseract(proc, {imgPath, QStringLiteral("stdout"), QStringLiteral("--psm"),
+                          QStringLiteral("0")});
     if (!proc.waitForFinished(30000) || proc.exitStatus() != QProcess::NormalExit)
         return fallback;
     const QString out = QString::fromUtf8(proc.readAllStandardOutput()) +
@@ -227,8 +241,8 @@ bool Ocr::addTextLayer(const QString& inputPath, const QString& outputPath,
             }
 
             QProcess proc2;
-            proc2.start(tess, {imgPath, QStringLiteral("stdout"), QStringLiteral("-l"), lang,
-                               QStringLiteral("tsv")});
+            startTesseract(proc2, {imgPath, QStringLiteral("stdout"), QStringLiteral("-l"),
+                                   lang, QStringLiteral("tsv")});
             if (!proc2.waitForFinished(180000) || proc2.exitStatus() != QProcess::NormalExit)
                 continue;
             const QString tsv = QString::fromUtf8(proc2.readAllStandardOutput());
