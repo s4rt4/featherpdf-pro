@@ -40,6 +40,8 @@ ui_*.h
 
 # --- Packaging output ---
 /packaging/windows/Output/
+# cmake --install prefix + stage-tesseract.ps1 output the installer consumes
+/staging/
 
 # --- Editor / IDE ---
 .vscode/
