@@ -235,6 +235,27 @@ qt_add_translations(feather-pdf
 
 install(TARGETS feather-pdf RUNTIME DESTINATION bin)
 
+# Explorer thumbnail provider. A COM DLL Explorer loads into its DllHost
+# surrogate, so it must not depend on the app: page one is rendered with the
+# Windows.Data.Pdf classes that ship with Windows 10+, never Qt/Poppler.
+# The installer registers it; see packaging/windows/feather-pdf-pro.iss.
+if(WIN32)
+    add_library(feather-thumb SHARED
+        shellext/ThumbnailProvider.cpp
+        shellext/feather-thumb.def
+    )
+    target_link_libraries(feather-thumb PRIVATE
+        WindowsApp   # C++/WinRT activation
+        shcore       # IStream <-> IRandomAccessStream interop
+        shlwapi      # QISearch, SHCreateMemStream
+        d3d11
+        gdi32
+        ole32
+        advapi32
+    )
+    install(TARGETS feather-thumb RUNTIME DESTINATION bin)
+endif()
+
 # Bundle the Qt (and other) runtime DLLs next to the exe on install/cpack, so
 # the ZIP is portable. windeployqt also copies the platform/imageformat plugins.
 if(WIN32)

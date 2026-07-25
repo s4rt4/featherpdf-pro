@@ -59,6 +59,19 @@ Root: HKLM; Subkey: "SOFTWARE\Classes\FeatherPDF.Document\shell\open\command"; V
 Root: HKLM; Subkey: "SOFTWARE\Classes\.pdf\OpenWithProgids"; ValueType: string; ValueName: "FeatherPDF.Document"; ValueData: ""; Flags: uninsdeletevalue
 Root: HKLM; Subkey: "SOFTWARE\Classes\.pdf"; ValueType: string; ValueData: "FeatherPDF.Document"; Tasks: associate
 
+; Explorer thumbnails: feather-thumb.dll renders page one via Windows.Data.Pdf
+; inside the shell's surrogate process. Registered under Feather's ProgID and
+; under the Applications key (the ProgID Windows uses when the user picks
+; Feather through Open With), so previews appear exactly when Feather is the
+; default PDF app. {{e357fccd-…} is the shell's thumbnail-handler category.
+#define ThumbClsid "{{C6DD57D7-9B9D-45BE-9881-AACF7F842E7A}"
+Root: HKLM; Subkey: "SOFTWARE\Classes\CLSID\{#ThumbClsid}"; ValueType: string; ValueData: "Feather PDF Thumbnail Provider"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "SOFTWARE\Classes\CLSID\{#ThumbClsid}\InprocServer32"; ValueType: string; ValueData: "{app}\bin\feather-thumb.dll"
+Root: HKLM; Subkey: "SOFTWARE\Classes\CLSID\{#ThumbClsid}\InprocServer32"; ValueType: string; ValueName: "ThreadingModel"; ValueData: "Both"
+Root: HKLM; Subkey: "SOFTWARE\Classes\FeatherPDF.Document\shellex\{{e357fccd-a995-4576-b01f-234630154e96}"; ValueType: string; ValueData: "{#ThumbClsid}"
+Root: HKLM; Subkey: "SOFTWARE\Classes\Applications\{#AppExe}\shellex\{{e357fccd-a995-4576-b01f-234630154e96}"; ValueType: string; ValueData: "{#ThumbClsid}"
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Approved"; ValueType: string; ValueName: "{#ThumbClsid}"; ValueData: "Feather PDF Thumbnail Provider"; Flags: uninsdeletevalue
+
 ; Right-click actions on any PDF — run headless, drop the result beside the
 ; source (the CLI toasts nothing; Explorer shows the new file appear).
 Root: HKLM; Subkey: "SOFTWARE\Classes\SystemFileAssociations\.pdf\shell\FeatherCompress"; ValueType: string; ValueData: "Compress with Feather PDF"; Tasks: context; Flags: uninsdeletekey

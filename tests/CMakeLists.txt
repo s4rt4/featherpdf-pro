@@ -428,6 +428,25 @@ add_dependencies(test_cli feather-pdf)
 add_test(NAME cli COMMAND test_cli)
 set_tests_properties(cli PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
 
+# Windows-only: the Explorer thumbnail provider COM DLL.
+if(WIN32)
+    qt_add_executable(test_thumbprovider test_thumbprovider.cpp)
+    target_include_directories(test_thumbprovider PRIVATE ${CMAKE_SOURCE_DIR}/src)
+    target_compile_definitions(test_thumbprovider PRIVATE
+        FEATHER_THUMB_DLL="$<TARGET_FILE:feather-thumb>")
+    target_link_libraries(test_thumbprovider PRIVATE
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Test
+        shlwapi
+        ole32
+        gdi32
+    )
+    add_dependencies(test_thumbprovider feather-thumb)
+    add_test(NAME thumbprovider COMMAND test_thumbprovider)
+    set_tests_properties(thumbprovider PROPERTIES ENVIRONMENT "${FEATHER_TEST_ENV}")
+endif()
+
 qt_add_executable(test_translations test_translations.cpp)
 target_include_directories(test_translations PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_compile_definitions(test_translations PRIVATE
