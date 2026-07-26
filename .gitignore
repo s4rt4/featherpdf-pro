@@ -44,6 +44,8 @@ ui_*.h
 /dist/
 # cmake --install prefix + stage-tesseract.ps1 output the installer consumes
 /staging/
+# vcpkg binary cache + downloads, where the workflows point vcpkg at
+/vcpkg-cache/
 
 # --- Editor / IDE ---
 .vscode/

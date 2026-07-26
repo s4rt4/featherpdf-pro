@@ -25,6 +25,11 @@ jobs:
       # tesseract is only needed here: it is bundled as the installer's optional
       # OCR component, and the test suite does not use it.
       VCPKG_DEPS: freetype libjpeg-turbo openjpeg libpng tiff lcms zlib qpdf openssl tesseract
+      # Same locations and the same cache key as ci.yml, so a release restores
+      # the archives a green build on main already produced and only has the
+      # extra OCR ports left to build. See the cache step there for the details.
+      VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg-cache/archives,readwrite
+      VCPKG_DOWNLOADS: ${{ github.workspace }}/vcpkg-cache/downloads
     steps:
       - name: Check out the source
         uses: actions/checkout@v4
@@ -56,15 +61,23 @@ jobs:
           cache: true
 
       # vcpkg rebuilds every port from source on a cold cache, and tesseract
-      # plus leptonica are not cheap; its binary cache makes reruns quick.
-      - name: Cache the vcpkg binary archives
+      # plus leptonica are not cheap. Caching the downloads as well means a
+      # release does not depend on every upstream source host still being up:
+      # freetype's is what broke the 1.0.0 release twice with a 504.
+      - name: Cache the vcpkg archives and downloads
         uses: actions/cache@v4
         with:
-          path: ~/AppData/Local/vcpkg/archives
-          key: vcpkg-release-${{ runner.os }}-${{ hashFiles('.github/workflows/release.yml') }}
+          path: |
+            vcpkg-cache/archives
+            vcpkg-cache/downloads
+          key: vcpkg-x64-windows-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: vcpkg-x64-windows-${{ runner.os }}-
 
       - name: Install vcpkg dependencies
         run: |
+          # vcpkg refuses to use a binary cache directory that does not exist,
+          # and on a cold cache the action has not created one.
+          New-Item -ItemType Directory -Force vcpkg-cache\archives, vcpkg-cache\downloads | Out-Null
           vcpkg install $env:VCPKG_DEPS.Split(" ") --triplet x64-windows
           echo "VCPKG_INSTALLED=$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows" >> $env:GITHUB_ENV
 

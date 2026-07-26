@@ -13,9 +13,29 @@ jobs:
     runs-on: windows-latest
     env:
       VCPKG_DEPS: freetype libjpeg-turbo openjpeg libpng tiff lcms zlib qpdf openssl
+      # Both directories are pinned into the workspace so the cache action has
+      # something it can actually find: left to itself vcpkg writes its binary
+      # cache under %LOCALAPPDATA%, and nothing was ever being saved.
+      VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg-cache/archives,readwrite
+      VCPKG_DOWNLOADS: ${{ github.workspace }}/vcpkg-cache/downloads
     steps:
       - name: Check out the source
         uses: actions/checkout@v4
+
+      # Rolling cache: the exact key never hits, so every run banks an updated
+      # archive set, while restore-keys pull in the newest previous one. The key
+      # deliberately does not encode the dependency list - vcpkg's archives are
+      # content-addressed, so an out-of-date cache costs a rebuild of whatever
+      # changed and nothing more, and release.yml can share the same entries.
+      # Caches saved here on main are what tag builds restore from.
+      - name: Cache the vcpkg archives and downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            vcpkg-cache/archives
+            vcpkg-cache/downloads
+          key: vcpkg-x64-windows-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: vcpkg-x64-windows-${{ runner.os }}-
 
       - name: Install Qt (with QtPdf and QtSpeech)
         uses: jurplel/install-qt-action@v4
@@ -28,6 +48,9 @@ jobs:
 
       - name: Install vcpkg dependencies
         run: |
+          # vcpkg refuses to use a binary cache directory that does not exist,
+          # and on a cold cache the action has not created one.
+          New-Item -ItemType Directory -Force vcpkg-cache\archives, vcpkg-cache\downloads | Out-Null
           vcpkg install $env:VCPKG_DEPS.Split(" ") --triplet x64-windows
           echo "VCPKG_INSTALLED=$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows" >> $env:GITHUB_ENV
 
