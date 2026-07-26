@@ -4,10 +4,13 @@
 #
 # winget-pkgs only accepts publicly downloadable installers, so submission
 # needs a public GitHub release. Per release:
-#   1. iscc packaging\windows\feather-pdf-pro.iss, attach the setup exe to a
-#      release tagged v<version>.
-#   2. Bump PackageVersion + InstallerUrl in all three manifests.
-#   3. winget hash feather-pdf-pro-<version>-setup.exe → InstallerSha256.
+#   1. Bump PackageVersion + InstallerUrl in all three manifests to match the
+#      VERSION in CMakeLists.txt.
+#   2. Push the tag v<version>: .github/workflows/release.yml builds the
+#      installer, publishes the release, and prints the installer's SHA-256 on
+#      the run summary.
+#   3. Copy that hash into InstallerSha256 — or recompute it locally with
+#      `winget hash feather-pdf-pro-<version>-setup.exe`.
 #   4. winget validate --manifest packaging\windows\winget
 #      winget install --manifest packaging\windows\winget  (needs the
 #      LocalManifestFiles setting enabled)
@@ -16,7 +19,7 @@
 #      wingetcreate update s4rt4.FeatherPDFPro --urls <url> --version <v> --submit
 #      (first submission: wingetcreate new)
 PackageIdentifier: s4rt4.FeatherPDFPro
-PackageVersion: 0.0.1
+PackageVersion: 1.0.0
 DefaultLocale: en-US
 ManifestType: version
 ManifestVersion: 1.6.0

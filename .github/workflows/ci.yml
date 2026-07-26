@@ -62,3 +62,15 @@ jobs:
 
       - name: Run tests
         run: ctest --test-dir build -C RelWithDebInfo --output-on-failure
+
+      # The tests all run against the build tree, so nothing else would notice a
+      # DLL or plugin missing from the packaged tree until someone installed a
+      # release. Stage it and run the CLI with the build environment stripped
+      # off PATH — that is the app a user actually gets.
+      - name: Verify the app stages into a runnable tree
+        run: |
+          # Absolute: Qt's deploy support rejects a relative install prefix.
+          cmake --install build --prefix "$env:GITHUB_WORKSPACE\staging" --config RelWithDebInfo
+          $env:PATH = "$env:SystemRoot\system32;$env:SystemRoot"
+          & staging\bin\feather-pdf.exe --version
+          if ($LASTEXITCODE -ne 0) { throw "The staged CLI failed to start (exit $LASTEXITCODE)" }

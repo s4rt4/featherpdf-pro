@@ -265,6 +265,62 @@ if(WIN32)
         NO_TRANSLATIONS
     )
     install(SCRIPT ${deploy_script})
+
+    # windeployqt deploys the plugins a GUI app needs, which does not include
+    # the off-screen platform — but that is exactly the one the headless CLI
+    # switches to (see src/app/main.cpp), and the installer wires the Explorer
+    # right-click actions to that CLI. Ship it explicitly or every one of them
+    # dies with "no Qt platform plugin could be initialized".
+    #
+    # QT_DEPLOY_PLUGINS_DIR only exists inside the generated deploy script, so
+    # mirror its default here — the same "plugins" directory bin/qt.conf points
+    # at. An empty destination would land the DLL at the root of the drive.
+    if(NOT QT_DEPLOY_PLUGINS_DIR)
+        set(QT_DEPLOY_PLUGINS_DIR "plugins")
+    endif()
+    install(FILES "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_PLUGINS}/platforms/qoffscreen.dll"
+            DESTINATION "${QT_DEPLOY_PLUGINS_DIR}/platforms")
+
+    # windeployqt only ever copies Qt's own libraries, but the app also loads
+    # poppler-qt6, qpdf and the vcpkg-built image/crypto libraries underneath
+    # them. Walk the real import tables instead of listing DLL names by hand:
+    # every dependency resolves out of the <prefix>/bin directories the build
+    # was configured against, and anything that resolves to System32 is a
+    # Windows DLL we must not ship.
+    #
+    # Qt's own bin directory is deliberately left out: windeployqt has already
+    # put those DLLs beside the exe, and searching both places makes
+    # file(GET_RUNTIME_DEPENDENCIES) fail with a conflict for every Qt library.
+    set(feather_dll_dirs "")
+    foreach(prefix IN LISTS CMAKE_PREFIX_PATH)
+        if(IS_DIRECTORY "${prefix}/bin" AND NOT EXISTS "${prefix}/bin/Qt6Core.dll")
+            list(APPEND feather_dll_dirs "${prefix}/bin")
+        endif()
+    endforeach()
+
+    install(CODE "
+        set(dll_dirs \"${feather_dll_dirs}\")
+        file(GET_RUNTIME_DEPENDENCIES
+            EXECUTABLES \"\${CMAKE_INSTALL_PREFIX}/bin/feather-pdf.exe\"
+            LIBRARIES \"\${CMAKE_INSTALL_PREFIX}/bin/feather-thumb.dll\"
+            RESOLVED_DEPENDENCIES_VAR resolved
+            UNRESOLVED_DEPENDENCIES_VAR unresolved
+            DIRECTORIES \${dll_dirs}
+            PRE_EXCLUDE_REGEXES \"^api-ms-\" \"^ext-ms-\"
+            POST_EXCLUDE_REGEXES \"[Ss]ystem32\"
+        )
+        foreach(dep IN LISTS resolved)
+            file(INSTALL DESTINATION \"\${CMAKE_INSTALL_PREFIX}/bin\"
+                 TYPE SHARED_LIBRARY FOLLOW_SYMLINK_CHAIN FILES \"\${dep}\")
+        endforeach()
+        # Qt libraries come out unresolved because they sit beside the exe
+        # rather than in a searched directory; only warn about the rest.
+        foreach(dep IN LISTS unresolved)
+            if(NOT EXISTS \"\${CMAKE_INSTALL_PREFIX}/bin/\${dep}\")
+                message(STATUS \"Not bundled (assumed system DLL): \${dep}\")
+            endif()
+        endforeach()
+    ")
 endif()
 
 # Windows shell integration (file association, "Open with Feather PDF Pro",

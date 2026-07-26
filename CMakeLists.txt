@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(FeatherPDF
-    VERSION 0.0.1
+    VERSION 1.0.0
     DESCRIPTION "Native, open-source PDF tool for Windows"
     HOMEPAGE_URL "https://github.com/s4rt4/featherpdf-pro"
     LANGUAGES CXX)
@@ -74,8 +74,16 @@ if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 
+# The app links the MSVC runtime dynamically, so the redistributable DLLs have
+# to travel with it — a machine without the Visual C++ redistributable installed
+# otherwise gets "VCRUNTIME140.dll was not found" instead of an app.
+if(WIN32)
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION bin)
+    include(InstallRequiredSystemLibraries)
+endif()
+
 # ── Packaging: `cpack` from the build dir → feather-pdf-pro-<ver>-win64.zip ──
-# (NSIS installer lands with the packaging milestone; ZIP is the portable build.)
+# (The installer is built from the same staged tree; see packaging/windows.)
 set(CPACK_GENERATOR "ZIP")
 set(CPACK_PACKAGE_NAME "feather-pdf-pro")
 set(CPACK_PACKAGE_VENDOR "Feather PDF contributors")

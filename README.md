@@ -12,9 +12,9 @@ Linux](https://github.com/s4rt4/featherpdf-linux), but is a separate app: the
 platform layer (speech, signing store, shell integration, packaging) is being
 rebuilt on native Windows technology.
 
-> Status: Windows port in progress (milestone **W0** — building & running on
-> MSVC). Feature milestones M0–M7 from the Linux app are inherited; the
-> Windows-specific work is tracked in the roadmap below.
+> Status: the Windows platform work (milestones **W0–W4**) is done. Feature
+> milestones M0–M7 from the Linux app are inherited; the Windows-specific work
+> is tracked in the roadmap below.
 
 ## Philosophy
 
@@ -105,14 +105,37 @@ Optional runtime tools, picked up automatically when installed: **Tesseract**
 
 ## Packaging
 
-`cpack` from the build dir produces a portable ZIP (Qt DLLs bundled via
-windeployqt). `packaging/windows/feather-pdf-pro.iss` builds the Inno Setup
-installer with the file association, Explorer context-menu actions, and the
-Explorer thumbnail provider (`feather-thumb.dll`). Run
-`scripts/stage-tesseract.ps1` before `iscc` to offer Tesseract OCR as an
-optional installer component; `packaging/windows/winget/` holds the winget
-manifests (submission needs a public release — the release checklist is in
-the version manifest's header comment).
+Both the portable ZIP and the installer are built from one staged tree, which
+`cmake --install` fills with the app, the Qt plugins, poppler/qpdf and the
+MSVC runtime, so it runs on a machine with nothing else installed:
+
+```powershell
+# The prefix must be absolute — Qt's deploy support rejects a relative one.
+cmake --install build --prefix "$PWD\staging" --config RelWithDebInfo
+.\scripts\stage-tesseract.ps1              # optional: bundle the OCR engine
+iscc packaging\windows\feather-pdf-pro.iss # needs Inno Setup 6
+```
+
+`packaging/windows/feather-pdf-pro.iss` adds the file association, the Explorer
+context-menu actions, and the Explorer thumbnail provider
+(`feather-thumb.dll`). `packaging/windows/winget/` holds the winget manifests.
+
+### Cutting a release
+
+`.github/workflows/release.yml` does all of the above on a runner, verifies the
+staged tree is complete, and publishes the installer, the ZIP and
+`SHA256SUMS.txt` to a GitHub release:
+
+1. Bump `VERSION` in `CMakeLists.txt`, and `PackageVersion`/`InstallerUrl` in
+   the three winget manifests.
+2. Run the workflow from the Actions tab first — it builds everything and
+   attaches the artifacts to the run without publishing anything.
+3. `git tag v<version> && git push origin v<version>`. The job refuses to
+   publish if the tag and the project version disagree.
+4. Take the installer's SHA-256 from the run summary into
+   `s4rt4.FeatherPDFPro.installer.yaml`, then submit to
+   [winget-pkgs](https://github.com/microsoft/winget-pkgs) (checklist in the
+   version manifest's header comment).
 
 ## Roadmap
 
@@ -121,7 +144,8 @@ the version manifest's header comment).
 | W0 | Build & run on Windows/MSVC (this port) | ✅ |
 | W1 | Windows-native signing (CNG / certificate store) | ✅ |
 | W2 | Scanning via WIA | ✅ |
-| W3 | Installer polish: bundled Tesseract, winget, Explorer thumbnails | ✅ (winget submission awaits a public release) |
+| W3 | Installer polish: bundled Tesseract, winget, Explorer thumbnails | ✅ |
+| W4 | Release pipeline: self-contained package, tagged GitHub releases | ✅ (winget submission awaits the first public release) |
 | M8 | Editing — existing-text reflow & images *(shared with Linux)* | ◐ |
 
 ## License

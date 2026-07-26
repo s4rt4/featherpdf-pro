@@ -1,0 +1,199 @@
+# Feather PDF Pro — cut a release: build, package, publish.
+#
+# Push a tag that matches the version in CMakeLists.txt to publish:
+#   git tag v1.0.0 && git push origin v1.0.0
+# The job refuses to run if the tag and the project version disagree, so the
+# CMake project stays the single source of truth for the version number.
+#
+# Run it from the Actions tab instead to rehearse: everything is built and the
+# artifacts are attached to the workflow run, but no release is created.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Package (Windows / MSVC / Qt 6)
+    runs-on: windows-latest
+    env:
+      # tesseract is only needed here: it is bundled as the installer's optional
+      # OCR component, and the test suite does not use it.
+      VCPKG_DEPS: freetype libjpeg-turbo openjpeg libpng tiff lcms zlib qpdf openssl tesseract
+    steps:
+      - name: Check out the source
+        uses: actions/checkout@v4
+
+      - name: Work out the version
+        id: version
+        run: |
+          $cmake = Get-Content CMakeLists.txt -Raw
+          if ($cmake -match '(?m)^\s*VERSION\s+(\d+\.\d+\.\d+)') {
+            $version = $Matches[1]
+          } else {
+            throw "No project VERSION found in CMakeLists.txt"
+          }
+          if ($env:GITHUB_REF -like 'refs/tags/*') {
+            $tag = $env:GITHUB_REF -replace '^refs/tags/', ''
+            if ($tag -ne "v$version") {
+              throw "Tag $tag does not match the project version $version - bump CMakeLists.txt or retag."
+            }
+          }
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+          Write-Host "Releasing version $version"
+
+      - name: Install Qt (with QtPdf and QtSpeech)
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.8.3"
+          arch: win64_msvc2022_64
+          modules: "qtpdf qtspeech qtmultimedia"
+          cache: true
+
+      # vcpkg rebuilds every port from source on a cold cache, and tesseract
+      # plus leptonica are not cheap; its binary cache makes reruns quick.
+      - name: Cache the vcpkg binary archives
+        uses: actions/cache@v4
+        with:
+          path: ~/AppData/Local/vcpkg/archives
+          key: vcpkg-release-${{ runner.os }}-${{ hashFiles('.github/workflows/release.yml') }}
+
+      - name: Install vcpkg dependencies
+        run: |
+          vcpkg install $env:VCPKG_DEPS.Split(" ") --triplet x64-windows
+          echo "VCPKG_INSTALLED=$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows" >> $env:GITHUB_ENV
+
+      - name: Cache the poppler-qt6 build
+        id: poppler-cache
+        uses: actions/cache@v4
+        with:
+          path: deps/poppler
+          key: poppler-25.07.0-qt6.8.3-msvc-${{ runner.os }}
+
+      - name: Build poppler-qt6
+        if: steps.poppler-cache.outputs.cache-hit != 'true'
+        run: .\scripts\build-poppler.ps1 -QtDir $env:QT_ROOT_DIR -VcpkgRoot $env:VCPKG_INSTALLATION_ROOT
+
+      - name: Configure
+        run: >
+          cmake -B build
+          -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR;$env:GITHUB_WORKSPACE/deps/poppler;$env:VCPKG_INSTALLED"
+
+      - name: Build
+        run: cmake --build build --config RelWithDebInfo
+
+      - name: Put runtime DLLs on PATH for the tests
+        run: |
+          echo "$env:VCPKG_INSTALLED\bin" >> $env:GITHUB_PATH
+          echo "$env:GITHUB_WORKSPACE\deps\poppler\bin" >> $env:GITHUB_PATH
+
+      # Never ship a build that cannot pass its own suite.
+      - name: Run tests
+        run: ctest --test-dir build -C RelWithDebInfo --output-on-failure
+
+      # An absolute prefix is required: Qt's deploy support rejects a relative
+      # one when it writes bin/qt.conf.
+      - name: Stage the application
+        run: cmake --install build --prefix "$env:GITHUB_WORKSPACE\staging" --config RelWithDebInfo
+
+      - name: Stage the bundled OCR engine
+        run: .\scripts\stage-tesseract.ps1 -Staging staging -VcpkgRoot $env:VCPKG_INSTALLATION_ROOT
+
+      # A missing DLL only shows up as a dialog on a user's machine, long after
+      # the release is out - so assert the staged tree is complete here.
+      - name: Verify the staged tree is self-contained
+        run: |
+          $required = @(
+            "bin\feather-pdf.exe"
+            "bin\feather-thumb.dll"
+            "bin\qt.conf"
+            "bin\Qt6Core.dll"
+            "bin\poppler-qt6.dll"
+            "bin\qpdf30.dll"
+            "bin\msvcp140.dll"
+            "bin\vcruntime140.dll"
+            "plugins\platforms\qwindows.dll"
+            "plugins\platforms\qoffscreen.dll"
+            "bin\tools\tesseract\tesseract.exe"
+            "bin\tools\tesseract\tessdata\eng.traineddata"
+            "bin\tools\tesseract\tessdata\configs\tsv"
+          )
+          $missing = $required | Where-Object { -not (Test-Path "staging\$_") }
+          if ($missing) { throw "Missing from the staged tree:`n$($missing -join "`n")" }
+          # The CLI is what the installer's Explorer actions run, and it needs
+          # the off-screen platform plugin; run it from the staged tree with
+          # nothing from the build environment on PATH.
+          $env:PATH = "$env:SystemRoot\system32;$env:SystemRoot"
+          & staging\bin\feather-pdf.exe --version
+          if ($LASTEXITCODE -ne 0) { throw "The staged CLI failed to start (exit $LASTEXITCODE)" }
+
+      # Zipped from the staged tree rather than via cpack so the portable build
+      # and the installer contain exactly the same files, OCR engine included.
+      - name: Build the portable ZIP
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Compress-Archive -Path staging\* -DestinationPath "dist\feather-pdf-pro-${{ steps.version.outputs.version }}-win64.zip"
+
+      # Inno Setup installs per-machine or per-user depending on how it arrived,
+      # so resolve ISCC.exe rather than assuming one of the two.
+      - name: Install Inno Setup
+        run: |
+          $candidates = @(
+            "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+            "$env:ProgramFiles\Inno Setup 6\ISCC.exe"
+            "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
+          )
+          if (-not ($candidates | Where-Object { Test-Path $_ })) {
+            choco install innosetup -y --no-progress
+          }
+          $iscc = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $iscc) { throw "ISCC.exe not found after installing Inno Setup" }
+          echo "ISCC=$iscc" >> $env:GITHUB_ENV
+
+      - name: Build the installer
+        run: |
+          & "$env:ISCC" `
+            /DAppVersion=${{ steps.version.outputs.version }} `
+            /O"$env:GITHUB_WORKSPACE\dist" `
+            packaging\windows\feather-pdf-pro.iss
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed (exit $LASTEXITCODE)" }
+
+      - name: Checksum the artifacts
+        run: |
+          # SHA256SUMS.txt is written after the listing, so it never hashes itself.
+          $hashes = Get-ChildItem dist | Get-FileHash -Algorithm SHA256
+          $hashes | ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } |
+            Set-Content dist\SHA256SUMS.txt -Encoding ascii
+          $setup = $hashes | Where-Object { $_.Path -like "*-setup.exe" }
+          # The winget manifest needs the installer's hash; surface it on the run
+          # summary so publishing does not mean re-downloading the installer.
+          @(
+            "### Artifacts"
+            ""
+            '```'
+            (Get-Content dist\SHA256SUMS.txt)
+            '```'
+            ""
+            "winget InstallerSha256: ``$($setup.Hash)``"
+          ) | Add-Content $env:GITHUB_STEP_SUMMARY
+
+      - name: Publish the release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" (Get-ChildItem dist | ForEach-Object FullName) `
+            --title "Feather PDF Pro ${{ steps.version.outputs.version }}" `
+            --generate-notes
+
+      - name: Attach the artifacts to the run
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: feather-pdf-pro-${{ steps.version.outputs.version }}
+          path: dist/

@@ -40,6 +40,8 @@ ui_*.h
 
 # --- Packaging output ---
 /packaging/windows/Output/
+# installer + ZIP, where the release workflow collects them
+/dist/
 # cmake --install prefix + stage-tesseract.ps1 output the installer consumes
 /staging/
 

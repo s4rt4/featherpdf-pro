@@ -10,7 +10,11 @@
 ; counterparts of the Linux build's Nautilus/Dolphin integration.
 
 #define AppName "Feather PDF Pro"
-#define AppVersion "0.0.1"
+; The release workflow passes the version from CMakeLists.txt as
+; `iscc /DAppVersion=<x.y.z>`; the fallback keeps local builds working.
+#ifndef AppVersion
+  #define AppVersion "1.0.0"
+#endif
 #define AppExe "feather-pdf.exe"
 #define AppPublisher "Feather PDF contributors"
 #define AppURL "https://github.com/s4rt4/featherpdf-pro"
@@ -55,8 +59,11 @@ Name: "app"; Description: "{#AppName}"; Types: full compact custom; Flags: fixed
 Name: "ocr"; Description: "OCR engine (Tesseract + English/Indonesian data)"; Types: full
 #endif
 
+; The whole staged prefix ships, not just bin: windeployqt puts the Qt plugins
+; in a sibling plugins\ directory that bin\qt.conf points at, and without them
+; the app cannot initialize a platform plugin at all.
 [Files]
-Source: "{#StagingDir}\bin\*"; DestDir: "{app}\bin"; Excludes: "\tools\tesseract\*"; Flags: recursesubdirs ignoreversion; Components: app
+Source: "{#StagingDir}\*"; DestDir: "{app}"; Excludes: "\bin\tools\tesseract\*"; Flags: recursesubdirs ignoreversion; Components: app
 #if TesseractStaged
 Source: "{#StagingDir}\bin\tools\tesseract\*"; DestDir: "{app}\bin\tools\tesseract"; Flags: recursesubdirs ignoreversion; Components: ocr
 #endif
