@@ -1,6 +1,7 @@
 # Feather PDF Pro — winget installer manifest.
-# InstallerSha256 is a placeholder: recompute it for every release with
-#   winget hash feather-pdf-pro-<version>-setup.exe
+# InstallerSha256 belongs to the published installer: recompute it for every
+# release with `winget hash feather-pdf-pro-<version>-setup.exe`, or copy it
+# off the release workflow's run summary.
 PackageIdentifier: s4rt4.FeatherPDFPro
 PackageVersion: 1.0.0
 InstallerLocale: en-US
@@ -22,6 +23,6 @@ AppsAndFeaturesEntries:
 Installers:
   - Architecture: x64
     InstallerUrl: https://github.com/s4rt4/featherpdf-pro/releases/download/v1.0.0/feather-pdf-pro-1.0.0-setup.exe
-    InstallerSha256: 0000000000000000000000000000000000000000000000000000000000000000
+    InstallerSha256: 5B91225C9CD43A6F783B05A36C06EAB75D422AE82C1213896459F575D78D9FF2
 ManifestType: installer
 ManifestVersion: 1.6.0
