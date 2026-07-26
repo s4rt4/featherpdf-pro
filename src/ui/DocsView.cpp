@@ -180,14 +180,14 @@ QList<Group> buildDocs() {
               "off-screen with no window (so it works with no display) and each command wraps the "
               "exact same backend the app uses. Exit codes are 0 success, 1 failure, 2 bad "
               "usage.</p>",
-              "<ul><li><code>feather-pdf --help</code> lists every command; "
-              "<code>feather-pdf COMMAND --help</code> shows a command's options.</li>"
-              "<li>Examples: <code>feather-pdf merge out.pdf a.pdf b.pdf</code> · "
-              "<code>feather-pdf extract in.pdf out.pdf --pages 1-3,5</code> · "
-              "<code>feather-pdf encrypt in.pdf out.pdf --password secret --no-print</code> · "
-              "<code>feather-pdf optimize in.pdf out.pdf --dpi 150</code> · "
-              "<code>feather-pdf info in.pdf</code>.</li></ul>",
-              "<p>Running <code>feather-pdf</code> with no arguments, or with a file path, still opens "
+              "<ul><li><code>feather-pdf-pro --help</code> lists every command; "
+              "<code>feather-pdf-pro COMMAND --help</code> shows a command's options.</li>"
+              "<li>Examples: <code>feather-pdf-pro merge out.pdf a.pdf b.pdf</code> · "
+              "<code>feather-pdf-pro extract in.pdf out.pdf --pages 1-3,5</code> · "
+              "<code>feather-pdf-pro encrypt in.pdf out.pdf --password secret --no-print</code> · "
+              "<code>feather-pdf-pro optimize in.pdf out.pdf --dpi 150</code> · "
+              "<code>feather-pdf-pro info in.pdf</code>.</li></ul>",
+              "<p>Running <code>feather-pdf-pro</code> with no arguments, or with a file path, still opens "
               "the graphical app. OCR needs Tesseract and the office conversions need LibreOffice, "
               "just like in the app.</p>"),
          sect("id", "<p>Antarmuka baris perintah tanpa jendela untuk skrip dan server.</p>",
@@ -197,14 +197,14 @@ QList<Group> buildDocs() {
               "berjalan off-screen tanpa jendela (jadi tetap jalan tanpa layar) dan tiap perintah "
               "membungkus backend yang persis sama dengan aplikasinya. Kode keluar 0 sukses, 1 gagal, "
               "2 salah pemakaian.</p>",
-              "<ul><li><code>feather-pdf --help</code> menampilkan semua perintah; "
-              "<code>feather-pdf PERINTAH --help</code> menampilkan opsinya.</li>"
-              "<li>Contoh: <code>feather-pdf merge out.pdf a.pdf b.pdf</code> · "
-              "<code>feather-pdf extract in.pdf out.pdf --pages 1-3,5</code> · "
-              "<code>feather-pdf encrypt in.pdf out.pdf --password rahasia --no-print</code> · "
-              "<code>feather-pdf optimize in.pdf out.pdf --dpi 150</code> · "
-              "<code>feather-pdf info in.pdf</code>.</li></ul>",
-              "<p>Menjalankan <code>feather-pdf</code> tanpa argumen, atau dengan sebuah path berkas, "
+              "<ul><li><code>feather-pdf-pro --help</code> menampilkan semua perintah; "
+              "<code>feather-pdf-pro PERINTAH --help</code> menampilkan opsinya.</li>"
+              "<li>Contoh: <code>feather-pdf-pro merge out.pdf a.pdf b.pdf</code> · "
+              "<code>feather-pdf-pro extract in.pdf out.pdf --pages 1-3,5</code> · "
+              "<code>feather-pdf-pro encrypt in.pdf out.pdf --password rahasia --no-print</code> · "
+              "<code>feather-pdf-pro optimize in.pdf out.pdf --dpi 150</code> · "
+              "<code>feather-pdf-pro info in.pdf</code>.</li></ul>",
+              "<p>Menjalankan <code>feather-pdf-pro</code> tanpa argumen, atau dengan sebuah path berkas, "
               "tetap membuka aplikasi grafis. OCR butuh Tesseract dan konversi office butuh "
               "LibreOffice, sama seperti di aplikasi.</p>")});
     g.append(start);
@@ -1032,7 +1032,7 @@ QList<Group> buildDocs() {
               "<ul><li><b>Document ▸ Long-Term Validation</b> (or the <b>Add long-term validation</b> "
               "button in <b>Document ▸ Signatures</b>): choose whether to also embed an archive "
               "timestamp, then where to save the enhanced copy.</li>"
-              "<li>Command line: <code>feather-pdf ltv signed.pdf out.pdf</code>, adding "
+              "<li>Command line: <code>feather-pdf-pro ltv signed.pdf out.pdf</code>, adding "
               "<code>--timestamp</code> (and an optional <code>--tsa URL</code>) for the archive "
               "timestamp.</li></ul>",
               "<p>The document must already be signed. Revocation data needs the certificates to "
@@ -1056,7 +1056,7 @@ QList<Group> buildDocs() {
               "<ul><li><b>Document ▸ Long-Term Validation</b> (atau tombol <b>Add long-term "
               "validation</b> di <b>Document ▸ Signatures</b>): pilih apakah ikut menyematkan archive "
               "timestamp, lalu lokasi menyimpan salinan.</li>"
-              "<li>Baris perintah: <code>feather-pdf ltv signed.pdf out.pdf</code>, tambahkan "
+              "<li>Baris perintah: <code>feather-pdf-pro ltv signed.pdf out.pdf</code>, tambahkan "
               "<code>--timestamp</code> (dan opsional <code>--tsa URL</code>) untuk archive "
               "timestamp.</li></ul>",
               "<p>Dokumen harus sudah ditandatangani. Data pencabutan butuh sertifikat yang "

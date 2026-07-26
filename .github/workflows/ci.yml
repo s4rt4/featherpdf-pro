@@ -53,7 +53,7 @@ jobs:
         run: cmake --build build --config RelWithDebInfo
 
       - name: Verify the binary was produced
-        run: if (-not (Test-Path build\RelWithDebInfo\feather-pdf.exe)) { exit 1 }
+        run: if (-not (Test-Path build\RelWithDebInfo\feather-pdf-pro.exe)) { exit 1 }
 
       - name: Put runtime DLLs on PATH for the tests
         run: |
@@ -72,5 +72,5 @@ jobs:
           # Absolute: Qt's deploy support rejects a relative install prefix.
           cmake --install build --prefix "$env:GITHUB_WORKSPACE\staging" --config RelWithDebInfo
           $env:PATH = "$env:SystemRoot\system32;$env:SystemRoot"
-          & staging\bin\feather-pdf.exe --version
+          & staging\bin\feather-pdf-pro.exe --version
           if ($LASTEXITCODE -ne 0) { throw "The staged CLI failed to start (exit $LASTEXITCODE)" }

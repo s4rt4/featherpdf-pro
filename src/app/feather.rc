@@ -1,0 +1,11 @@
+// Feather PDF Pro — Windows resources.
+//
+// Windows shows the numerically lowest icon resource as the executable's icon,
+// so this one is IDI_ICON1. It gives feather-pdf-pro.exe its taskbar and
+// Start-menu icon. PDF *files* get their own icon instead — see
+// resources/icons/pdf-document.svg and the DefaultIcon entry in the installer.
+//
+// resources/windows/feather.ico is generated from the logo SVG by
+// scripts/make-branding.py.
+
+IDI_ICON1 ICON "../../resources/windows/feather.ico"

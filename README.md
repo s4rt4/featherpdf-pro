@@ -61,21 +61,22 @@ footers, visual or word-level compare, PDF/A-1b + veraPDF preflight,
 flattening, **Read aloud** via the built-in Windows voices, and a batch /
 action wizard that pipelines any of these over many files.
 
-**Command line** — the same `feather-pdf.exe` runs headless when given a
+**Command line** — the same `feather-pdf-pro.exe` runs headless when given a
 sub-command, for scripts and automation:
 
 ```powershell
-feather-pdf merge out.pdf a.pdf b.pdf
-feather-pdf extract in.pdf out.pdf --pages 1-3,5
-feather-pdf encrypt in.pdf out.pdf --password secret --no-print
-feather-pdf ocr scan.pdf searchable.pdf --lang eng
-feather-pdf watch --action my-action.json --in C:\Inbox --out C:\Done
-feather-pdf --help
+feather-pdf-pro merge out.pdf a.pdf b.pdf
+feather-pdf-pro extract in.pdf out.pdf --pages 1-3,5
+feather-pdf-pro encrypt in.pdf out.pdf --password secret --no-print
+feather-pdf-pro ocr scan.pdf searchable.pdf --lang eng
+feather-pdf-pro watch --action my-action.json --in C:\Inbox --out C:\Done
+feather-pdf-pro --help
 ```
 
 **Windows integration** — the installer registers Feather for *Open With…* on
 PDFs and adds right-click actions (*Compress*, *Remove Hidden Info*) to
-Explorer. Point Task Scheduler at `feather-pdf watch` to automate a folder.
+Explorer. PDFs get Feather's icon and a badge on their page previews. Point
+Task Scheduler at `feather-pdf-pro watch` to automate a folder.
 
 ## Building
 
@@ -93,7 +94,7 @@ vcpkg install freetype libjpeg-turbo openjpeg libpng tiff lcms zlib qpdf openssl
 # 3. Feather itself
 cmake --preset windows-msvc
 cmake --build --preset windows-msvc
-.\build\src\RelWithDebInfo\feather-pdf.exe path\to\document.pdf
+.\build\src\RelWithDebInfo\feather-pdf-pro.exe path\to\document.pdf
 ```
 
 If your Qt lives elsewhere, adjust `CMAKE_PREFIX_PATH` in
@@ -119,6 +120,11 @@ iscc packaging\windows\feather-pdf-pro.iss # needs Inno Setup 6
 `packaging/windows/feather-pdf-pro.iss` adds the file association, the Explorer
 context-menu actions, and the Explorer thumbnail provider
 (`feather-thumb.dll`). `packaging/windows/winget/` holds the winget manifests.
+
+The app icon and the installer's wizard artwork are both generated from
+`resources/icons/feather-logo.svg` by `scripts/make-branding.py` (needs Pillow
+and Chrome), so they cannot drift from the logo. Re-run it and commit the
+result whenever the logo changes.
 
 ### Cutting a release
 

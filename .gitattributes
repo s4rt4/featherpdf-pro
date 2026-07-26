@@ -9,4 +9,5 @@
 # Binary assets.
 *.png binary
 *.ico binary
+*.bmp binary
 *.pdf binary

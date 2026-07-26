@@ -109,7 +109,7 @@ jobs:
       - name: Verify the staged tree is self-contained
         run: |
           $required = @(
-            "bin\feather-pdf.exe"
+            "bin\feather-pdf-pro.exe"
             "bin\feather-thumb.dll"
             "bin\qt.conf"
             "bin\Qt6Core.dll"
@@ -129,7 +129,7 @@ jobs:
           # the off-screen platform plugin; run it from the staged tree with
           # nothing from the build environment on PATH.
           $env:PATH = "$env:SystemRoot\system32;$env:SystemRoot"
-          & staging\bin\feather-pdf.exe --version
+          & staging\bin\feather-pdf-pro.exe --version
           if ($LASTEXITCODE -ne 0) { throw "The staged CLI failed to start (exit $LASTEXITCODE)" }
 
       # Zipped from the staged tree rather than via cpack so the portable build

@@ -53,11 +53,11 @@ QTextStream& err() {
     return s;
 }
 int fail(const QString& message) {
-    err() << "feather-pdf: " << message << Qt::endl;
+    err() << "feather-pdf-pro: " << message << Qt::endl;
     return 1;
 }
 int usage(const QString& message) {
-    err() << "feather-pdf: " << message << Qt::endl;
+    err() << "feather-pdf-pro: " << message << Qt::endl;
     return 2;
 }
 
@@ -781,7 +781,7 @@ int cmdWatch(const QStringList& a) {
         WatchFolder::Counts c;
         QString w;
         if (!WatchFolder::processPending(inDir, outDir, doneDir, steps, quiet, &c, &w)) {
-            err() << "feather-pdf: " << w << Qt::endl;
+            err() << "feather-pdf-pro: " << w << Qt::endl;
             return false;
         }
         if (c.processed || c.failed)
@@ -883,15 +883,15 @@ int printUsage(QTextStream& s) {
       << Qt::endl
       << Qt::endl
       << "Usage:" << Qt::endl
-      << "  feather-pdf                 Launch the graphical app" << Qt::endl
-      << "  feather-pdf FILE.pdf        Open FILE in the graphical app" << Qt::endl
-      << "  feather-pdf COMMAND [args]  Run a headless operation" << Qt::endl
+      << "  feather-pdf-pro                 Launch the graphical app" << Qt::endl
+      << "  feather-pdf-pro FILE.pdf        Open FILE in the graphical app" << Qt::endl
+      << "  feather-pdf-pro COMMAND [args]  Run a headless operation" << Qt::endl
       << Qt::endl
       << "Commands:" << Qt::endl;
     for (const Command& c : kCommands)
         s << "  " << QString::fromLatin1(c.name).leftJustified(14) << c.summary << Qt::endl;
     s << Qt::endl
-      << "Run 'feather-pdf COMMAND --help' for a command's options." << Qt::endl;
+      << "Run 'feather-pdf-pro COMMAND --help' for a command's options." << Qt::endl;
     return 0;
 }
 
@@ -925,6 +925,6 @@ int Cli::run(const QStringList& args) {
         if (cmd == QLatin1String(c.name))
             return c.run(args.mid(1)); // pass [command, ...options]
 
-    usage(QStringLiteral("unknown command '%1'. Run 'feather-pdf --help'.").arg(cmd));
+    usage(QStringLiteral("unknown command '%1'. Run 'feather-pdf-pro --help'.").arg(cmd));
     return 2;
 }

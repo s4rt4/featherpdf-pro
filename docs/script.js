@@ -85,15 +85,15 @@
   var termBody = document.getElementById('termBody');
   if (termBody) {
     var SCRIPT = [
-      { cmd: 'feather-pdf merge book.pdf intro.pdf chapters.pdf annex.pdf',
+      { cmd: 'feather-pdf-pro merge book.pdf intro.pdf chapters.pdf annex.pdf',
         out: 'Merged 3 files into book.pdf' },
-      { cmd: 'feather-pdf optimize scan.pdf small.pdf',
+      { cmd: 'feather-pdf-pro optimize scan.pdf small.pdf',
         out: 'Optimized small.pdf: 18734211 -> 4102931 bytes (78.1% smaller)' },
-      { cmd: 'feather-pdf extract report.pdf pages.pdf --pages 1-3,7',
+      { cmd: 'feather-pdf-pro extract report.pdf pages.pdf --pages 1-3,7',
         out: 'Extracted 4 pages into pages.pdf' },
-      { cmd: 'feather-pdf ltv signed.pdf archived.pdf',
+      { cmd: 'feather-pdf-pro ltv signed.pdf archived.pdf',
         out: 'Added long-term validation to archived.pdf: 3 certificate(s), 1 OCSP, 1 CRL across 1 signature(s)' },
-      { cmd: 'feather-pdf watermark draft.pdf out.pdf --text CONFIDENTIAL',
+      { cmd: 'feather-pdf-pro watermark draft.pdf out.pdf --text CONFIDENTIAL',
         out: 'Watermarked out.pdf' }
     ];
     var idx = 0;

@@ -149,7 +149,7 @@ BatchDialog::BatchDialog(const QStringList& initialFiles, QWidget* parent) : QDi
     stepsCol->addLayout(stepsButtons);
 
     // Reusable actions: save the assembled steps to a file, or load one back
-    // (the same file the `feather-pdf watch` daemon consumes).
+    // (the same file the `feather-pdf-pro watch` daemon consumes).
     auto* actionButtons = new QHBoxLayout;
     auto* saveActionBtn = new QPushButton(tr("Save action…"), this);
     saveActionBtn->setObjectName(QStringLiteral("Ghost"));

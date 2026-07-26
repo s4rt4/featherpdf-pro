@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     const QString firstArg = argc > 1 ? QString::fromLocal8Bit(argv[1]) : QString();
     if (Cli::isCommand(firstArg)) {
 #ifdef Q_OS_WIN
-        // feather-pdf.exe is a GUI-subsystem binary, so cmd/PowerShell start it
+        // feather-pdf-pro.exe is a GUI-subsystem binary, so cmd/PowerShell start it
         // with no console and CLI output would vanish. Re-attach to the parent
         // console and rewire the standard streams — but only the streams that
         // have no handle yet, so redirection and pipes (scripts, tests) keep

@@ -15,7 +15,7 @@
 #ifndef AppVersion
   #define AppVersion "1.0.0"
 #endif
-#define AppExe "feather-pdf.exe"
+#define AppExe "feather-pdf-pro.exe"
 #define AppPublisher "Feather PDF contributors"
 #define AppURL "https://github.com/s4rt4/featherpdf-pro"
 #define StagingDir "..\..\staging"
@@ -31,6 +31,13 @@ DefaultDirName={autopf}\{#AppName}
 DefaultGroupName={#AppName}
 UninstallDisplayIcon={app}\bin\{#AppExe}
 LicenseFile=..\..\LICENSE
+
+; Branding. All three come from the logo SVG via scripts/make-branding.py; the
+; wizard images are listed at several sizes so Setup can pick one that matches
+; the user's display scaling instead of stretching a 96-DPI bitmap.
+SetupIconFile=..\..\resources\windows\feather.ico
+WizardImageFile=wizard-large-164.bmp,wizard-large-246.bmp,wizard-large-328.bmp
+WizardSmallImageFile=wizard-small-55.bmp,wizard-small-83.bmp,wizard-small-110.bmp
 OutputBaseFilename=feather-pdf-pro-{#AppVersion}-setup
 Compression=lzma2
 SolidCompression=yes
@@ -67,6 +74,10 @@ Source: "{#StagingDir}\*"; DestDir: "{app}"; Excludes: "\bin\tools\tesseract\*";
 #if TesseractStaged
 Source: "{#StagingDir}\bin\tools\tesseract\*"; DestDir: "{app}\bin\tools\tesseract"; Flags: recursesubdirs ignoreversion; Components: ocr
 #endif
+; Shell icons for PDF files. They live outside the staged app because nothing
+; but the registry entries below refers to them.
+Source: "..\..\resources\windows\pdf-document.ico"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: app
+Source: "..\..\resources\windows\pdf-badge.ico"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: app
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\bin\{#AppExe}"
@@ -80,7 +91,12 @@ Root: HKLM; Subkey: "SOFTWARE\Classes\Applications\{#AppExe}\SupportedTypes"; Va
 
 ; Feather's ProgID + optional default association.
 Root: HKLM; Subkey: "SOFTWARE\Classes\FeatherPDF.Document"; ValueType: string; ValueData: "PDF Document"; Flags: uninsdeletekey
-Root: HKLM; Subkey: "SOFTWARE\Classes\FeatherPDF.Document\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\{#AppExe},0"
+; Two icons, the way Acrobat and Foxit do it: DefaultIcon is the full document
+; icon Explorer falls back to when a cover cannot be rendered, and TypeOverlay
+; is the small badge the shell stamps on covers that *can* be rendered — so a
+; page thumbnail still reads as a PDF that Feather opens.
+Root: HKLM; Subkey: "SOFTWARE\Classes\FeatherPDF.Document\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\pdf-document.ico"
+Root: HKLM; Subkey: "SOFTWARE\Classes\FeatherPDF.Document"; ValueType: string; ValueName: "TypeOverlay"; ValueData: "{app}\bin\pdf-badge.ico"
 Root: HKLM; Subkey: "SOFTWARE\Classes\FeatherPDF.Document\shell\open\command"; ValueType: string; ValueData: """{app}\bin\{#AppExe}"" ""%1"""
 Root: HKLM; Subkey: "SOFTWARE\Classes\.pdf\OpenWithProgids"; ValueType: string; ValueName: "FeatherPDF.Document"; ValueData: ""; Flags: uninsdeletevalue
 Root: HKLM; Subkey: "SOFTWARE\Classes\.pdf"; ValueType: string; ValueData: "FeatherPDF.Document"; Tasks: associate

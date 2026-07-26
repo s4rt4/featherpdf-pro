@@ -2,6 +2,9 @@
 # Copyright (C) 2026 Feather PDF contributors. Licensed under GPLv3 (see LICENSE).
 
 qt_add_executable(feather-pdf
+    # Gives the exe its icon; MSVC ignores .rc files on other platforms anyway,
+    # but keep it behind the guard so a non-Windows build never sees it.
+    $<$<BOOL:${WIN32}>:app/feather.rc>
     app/main.cpp
     cli/Cli.cpp
     cli/Cli.h
@@ -233,6 +236,12 @@ qt_add_translations(feather-pdf
     LUPDATE_OPTIONS -no-obsolete
 )
 
+# The binary is feather-pdf-pro.exe, not feather-pdf.exe: Windows keys the
+# HKCR\Applications\<exe> namespace by file name alone, so sharing a name with
+# any other feather-pdf.exe on the machine would mean sharing that app's
+# "Open with" entry, its friendly name and our thumbnail-handler registration.
+set_target_properties(feather-pdf PROPERTIES OUTPUT_NAME "feather-pdf-pro")
+
 install(TARGETS feather-pdf RUNTIME DESTINATION bin)
 
 # Explorer thumbnail provider. A COM DLL Explorer loads into its DllHost
@@ -301,7 +310,7 @@ if(WIN32)
     install(CODE "
         set(dll_dirs \"${feather_dll_dirs}\")
         file(GET_RUNTIME_DEPENDENCIES
-            EXECUTABLES \"\${CMAKE_INSTALL_PREFIX}/bin/feather-pdf.exe\"
+            EXECUTABLES \"\${CMAKE_INSTALL_PREFIX}/bin/feather-pdf-pro.exe\"
             LIBRARIES \"\${CMAKE_INSTALL_PREFIX}/bin/feather-thumb.dll\"
             RESOLVED_DEPENDENCIES_VAR resolved
             UNRESOLVED_DEPENDENCIES_VAR unresolved

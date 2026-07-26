@@ -56,7 +56,7 @@ QString inProgramFiles(const QString& sub) {
     return QString();
 }
 
-// Tools we may ship next to feather-pdf.exe (installer-bundled copies win
+// Tools we may ship next to feather-pdf-pro.exe (installer-bundled copies win
 // over anything the user has on PATH, so the app works out of the box).
 QString bundled(const QString& relative) {
     return existing(QCoreApplication::applicationDirPath() + QStringLiteral("/tools/") + relative);

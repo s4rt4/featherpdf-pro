@@ -364,7 +364,7 @@ STDAPI DllCanUnloadNow() {
 }
 
 // regsvr32 support for development; the installer writes the same keys (plus
-// the shellex entry under Applications\feather-pdf.exe, which matters when
+// the shellex entry under Applications\feather-pdf-pro.exe, which matters when
 // the user picked Feather through the Open With dialog).
 STDAPI DllRegisterServer() {
     wchar_t module[MAX_PATH];
