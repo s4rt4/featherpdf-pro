@@ -300,8 +300,13 @@ if(WIN32)
     # Qt's own bin directory is deliberately left out: windeployqt has already
     # put those DLLs beside the exe, and searching both places makes
     # file(GET_RUNTIME_DEPENDENCIES) fail with a conflict for every Qt library.
+    # The prefixes are normalized to forward slashes first: they are pasted into
+    # the install script below as a string literal, and a native Windows path
+    # like D:\a\... makes CMake reject the whole script with "Invalid character
+    # escape '\a'" the moment it runs.
     set(feather_dll_dirs "")
     foreach(prefix IN LISTS CMAKE_PREFIX_PATH)
+        file(TO_CMAKE_PATH "${prefix}" prefix)
         if(IS_DIRECTORY "${prefix}/bin" AND NOT EXISTS "${prefix}/bin/Qt6Core.dll")
             list(APPEND feather_dll_dirs "${prefix}/bin")
         endif()
