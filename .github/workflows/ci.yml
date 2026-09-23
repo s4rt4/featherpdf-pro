@@ -6,6 +6,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # GitHub refuses to rerun a run older than a month, so keep a manual trigger.
+  workflow_dispatch:
 
 jobs:
   build:
