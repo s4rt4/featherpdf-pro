@@ -16,6 +16,7 @@
 
 #include "ui/HomeView.h"
 
+#include "core/AppPaths.h"
 #include "ui/Theme.h"
 
 #include <QCryptographicHash>
@@ -38,7 +39,6 @@
 #include <QResizeEvent>
 #include <QScrollArea>
 #include <QSettings>
-#include <QStandardPaths>
 #include <QVBoxLayout>
 #include <algorithm>
 
@@ -66,8 +66,7 @@ QPixmap withRoundedCorners(const QPixmap& src, int radius) {
 // corrupted) — the tile then falls back to the icon chip.
 QPixmap coverPixmap(const QString& path, const QSize& box, qreal dpr) {
     const QFileInfo fi(path);
-    const QString dir =
-        QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/covers";
+    const QString dir = AppPaths::cacheDir() + "/covers";
     QDir().mkpath(dir);
     const QByteArray key =
         QCryptographicHash::hash((path + '|' + QString::number(fi.lastModified().toSecsSinceEpoch())

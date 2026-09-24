@@ -147,10 +147,16 @@ jobs:
 
       # Zipped from the staged tree rather than via cpack so the portable build
       # and the installer contain exactly the same files, OCR engine included.
+      # The ZIP adds portable.txt, which switches the app to keeping its
+      # settings and caches in a data folder beside bin, and wraps everything
+      # in one top-level folder so "Extract here" does not spill loose files.
       - name: Build the portable ZIP
         run: |
-          New-Item -ItemType Directory -Force dist | Out-Null
-          Compress-Archive -Path staging\* -DestinationPath "dist\feather-pdf-pro-${{ steps.version.outputs.version }}-win64.zip"
+          $name = "feather-pdf-pro-${{ steps.version.outputs.version }}"
+          New-Item -ItemType Directory -Force dist, "portable\$name" | Out-Null
+          Copy-Item -Recurse staging\* "portable\$name"
+          Copy-Item packaging\windows\portable.txt "portable\$name"
+          Compress-Archive -Path "portable\$name" -DestinationPath "dist\$name-win64-portable.zip"
 
       # Inno Setup installs per-machine or per-user depending on how it arrived,
       # so resolve ISCC.exe rather than assuming one of the two.

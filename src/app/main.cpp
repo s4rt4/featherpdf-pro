@@ -17,6 +17,7 @@
 #include "app/MainWindow.h"
 
 #include "cli/Cli.h"
+#include "core/AppPaths.h"
 #include "ui/Theme.h"
 
 #include <QApplication>
@@ -42,6 +43,7 @@ void setAppIdentity() {
     QCoreApplication::setOrganizationDomain(QStringLiteral("github.com/s4rt4"));
     QCoreApplication::setApplicationName(QStringLiteral("Feather PDF"));
     QCoreApplication::setApplicationVersion(QStringLiteral(FEATHERPDF_VERSION));
+    AppPaths::init(); // portable ZIP: settings + cache next to the exe
 }
 } // namespace
 

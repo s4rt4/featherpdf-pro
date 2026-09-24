@@ -16,6 +16,7 @@
 
 #include "ui/BatchDialog.h"
 
+#include "core/AppPaths.h"
 #include "ui/StepConfigDialog.h"
 #include "ui/Theme.h"
 
@@ -32,7 +33,6 @@
 #include <QMenu>
 #include <QProgressBar>
 #include <QPushButton>
-#include <QStandardPaths>
 #include <QVBoxLayout>
 
 namespace {
@@ -312,8 +312,7 @@ void BatchDialog::saveActionToFile() {
         m_status->setText(tr("Add a step before saving an action."));
         return;
     }
-    QString dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-                  + QStringLiteral("/actions");
+    QString dir = AppPaths::dataDir() + QStringLiteral("/actions");
     QDir().mkpath(dir);
     QString path = QFileDialog::getSaveFileName(this, tr("Save action"),
                                                 dir + QStringLiteral("/action.json"),
@@ -330,8 +329,7 @@ void BatchDialog::saveActionToFile() {
 }
 
 void BatchDialog::loadActionFromFile() {
-    const QString dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-                        + QStringLiteral("/actions");
+    const QString dir = AppPaths::dataDir() + QStringLiteral("/actions");
     const QString path = QFileDialog::getOpenFileName(this, tr("Load action"), dir,
                                                       tr("Feather actions (*.json)"));
     if (path.isEmpty())

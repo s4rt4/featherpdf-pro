@@ -16,6 +16,7 @@
 
 #include "ui/PrintDialog.h"
 
+#include "core/AppPaths.h"
 #include "ui/Theme.h"
 
 #include <QApplication>
@@ -39,7 +40,6 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QSpinBox>
-#include <QStandardPaths>
 #include <QStringList>
 #include <QVBoxLayout>
 #include <QtConcurrent>
@@ -64,8 +64,7 @@ QString css(const QColor& c) {
 // PNG of `name` once to the cache dir and hand back a path usable in url(...).
 // Used for the combo/spin chevrons so they recolour with the theme.
 QString tintedIconPath(const QString& name, const QColor& color) {
-    const QString dir =
-        QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/ctl-icons";
+    const QString dir = AppPaths::cacheDir() + "/ctl-icons";
     QDir().mkpath(dir);
     const QString path = dir + '/' + name + '-' + color.name(QColor::HexArgb).mid(1) + ".png";
     if (!QFileInfo::exists(path)) {

@@ -1,0 +1,15 @@
+Feather PDF Pro - portable edition
+==================================
+
+Run bin\feather-pdf-pro.exe. Nothing needs to be installed.
+
+While this file sits next to the bin folder, Feather keeps its settings,
+recent files, saved batch actions and caches in the "data" folder here
+instead of in the registry and AppData, so the whole folder can be moved or
+carried on a USB stick. Keep the folder somewhere writable (not under
+Program Files).
+
+Delete this file to make Feather use the normal per-user locations instead.
+
+Explorer integration (PDF thumbnails, right-click actions, "Open with") is
+only set up by the installer.

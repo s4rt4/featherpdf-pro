@@ -121,6 +121,12 @@ iscc packaging\windows\feather-pdf-pro.iss # needs Inno Setup 6
 context-menu actions, and the Explorer thumbnail provider
 (`feather-thumb.dll`). `packaging/windows/winget/` holds the winget manifests.
 
+The portable ZIP is the same tree plus `packaging/windows/portable.txt` next
+to `bin`. While that file is there the app runs in portable mode
+(`src/core/AppPaths.cpp`): settings go to an INI file and caches/actions to a
+`data` folder beside `bin`, so nothing is written to the registry or AppData.
+To try it locally, copy the file into `staging\`.
+
 The app icon and the installer's wizard artwork are both generated from
 `resources/icons/feather-logo.svg` by `scripts/make-branding.py` (needs Pillow
 and Chrome), so they cannot drift from the logo. Re-run it and commit the

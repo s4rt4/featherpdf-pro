@@ -16,12 +16,13 @@
 
 #include "ui/Theme.h"
 
+#include "core/AppPaths.h"
+
 #include <QApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QHash>
-#include <QStandardPaths>
 #include <QPainter>
 #include <QPalette>
 #include <QPixmap>
@@ -443,8 +444,7 @@ QIcon Theme::icon(const QString& name, QColor color) const {
 QString Theme::symbolicIconPath(const QString& name, QColor color) const {
     if (!color.isValid())
         color = m_palette.dim;
-    const QString dir =
-        QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/ctl-icons";
+    const QString dir = AppPaths::cacheDir() + "/ctl-icons";
     QDir().mkpath(dir);
     const QString path = dir + '/' + name + '-' + color.name(QColor::HexArgb).mid(1) + ".png";
     if (!QFileInfo::exists(path)) {
