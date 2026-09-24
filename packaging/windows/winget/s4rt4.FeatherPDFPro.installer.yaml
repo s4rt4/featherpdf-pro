@@ -23,6 +23,6 @@ AppsAndFeaturesEntries:
 Installers:
   - Architecture: x64
     InstallerUrl: https://github.com/s4rt4/featherpdf-pro/releases/download/v1.0.1/feather-pdf-pro-1.0.1-setup.exe
-    InstallerSha256: 5B91225C9CD43A6F783B05A36C06EAB75D422AE82C1213896459F575D78D9FF2
+    InstallerSha256: 27CB5C64D80531C6E0AC0988F563826AD3F671CCA97049D7AC5EE06B234F9A76
 ManifestType: installer
 ManifestVersion: 1.6.0
