@@ -19,7 +19,7 @@
 #      wingetcreate update s4rt4.FeatherPDFPro --urls <url> --version <v> --submit
 #      (first submission: wingetcreate new)
 PackageIdentifier: s4rt4.FeatherPDFPro
-PackageVersion: 1.0.0
+PackageVersion: 1.0.1
 DefaultLocale: en-US
 ManifestType: version
 ManifestVersion: 1.6.0

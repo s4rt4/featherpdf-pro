@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(FeatherPDF
-    VERSION 1.0.0
+    VERSION 1.0.1
     DESCRIPTION "Native, open-source PDF tool for Windows"
     HOMEPAGE_URL "https://github.com/s4rt4/featherpdf-pro"
     LANGUAGES CXX)

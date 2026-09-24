@@ -1,6 +1,6 @@
 # Feather PDF Pro — winget default-locale manifest.
 PackageIdentifier: s4rt4.FeatherPDFPro
-PackageVersion: 1.0.0
+PackageVersion: 1.0.1
 PackageLocale: en-US
 Publisher: Feather PDF contributors
 PublisherUrl: https://github.com/s4rt4/featherpdf-pro

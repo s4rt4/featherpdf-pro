@@ -13,7 +13,7 @@
 ; The release workflow passes the version from CMakeLists.txt as
 ; `iscc /DAppVersion=<x.y.z>`; the fallback keeps local builds working.
 #ifndef AppVersion
-  #define AppVersion "1.0.0"
+  #define AppVersion "1.0.1"
 #endif
 #define AppExe "feather-pdf-pro.exe"
 #define AppPublisher "Feather PDF contributors"
